@@ -15,7 +15,69 @@ import org.universeengine.opengl.vertex.UniColor3f;
 import org.universeengine.opengl.vertex.UniNormal3f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
 import org.universeengine.opengl.vertex.UniVertex3f;
+import org.universeengine.util.UniPrint;
 
+/**
+ * Short: to load UEM-Models, use loadUEM().
+ * 
+ * Long:
+ * This is the ModelLoader for loading .uem ModelFiles (UniverseEngine Model)
+ * The UEM File Structure can be printed with printUEM(String filename).
+ * If you have not got any UEM Files to print, just call
+ * writeUniCubeUEM(String filename). It will create you a test File,
+ * which has exactly the same Vertices as the UniCube class.
+ * 
+ * The final UEM File could look as following:
+ * START
+ *  MESH
+ *  [NUMBER OF MESHES]
+ *   ELEMENTS
+ *   [NUMBER OF ELEMENTS]
+ *    VERTICES
+ *     [FLOAT]
+ *     [FLOAT]
+ *     [FLOAT]
+ *    NORMALS
+ *     [FLOAT]
+ *     [FLOAT]
+ *     [FLOAT]
+ *    COLORS
+ *     [FLOAT]
+ *     [FLOAT]
+ *     [FLOAT]
+ *    TEXCOORDS
+ *     [FLOAT]
+ *     [FLOAT]
+ *     [FLOAT]
+ *    END_ELEMENT
+ *   [MORE ELEMENTS ...]
+ *  INDICES
+ *  [NUMBER OF INDICES]
+ *   [INT]
+ *   [INT]
+ *   [INT]
+ *   [...]
+ *  [MORE MESHES ...]
+ * END
+ * 
+ * REMEMBER: This File structure is BINARY and is not an ASCII File.
+ * It cannot be seen in a Text-Editor, however, you can call printUEM(String file)
+ * to print everything, so it looks like above.
+ * In the real UEM File, the START/END/MESH/ELEMENTS Flag will be bytes,
+ * with the values of the final Fields in this class.
+ * 
+ * To be added:
+ *  - Translations of single Meshes.
+ *  - Rotations of single Meshes.
+ *  - Skeletal Animation, with skinning.
+ *    (Shaders must be written for that first...)
+ *  - Many other Optional features.
+ * 
+ * Also, I might take my time to write a Blender Export script,
+ * so that developing games with this Engine will be a lot easier.
+ * 
+ * @author matheus23
+ */
 public final class UniModelLoader {
 	
 	public static final byte START = 101;
@@ -32,28 +94,26 @@ public final class UniModelLoader {
 	public static final byte END_ELEMENT = -105;
 	public static final byte INDICES = -106;
 
-	public static UniModel readUEM(String filename) throws IOException, UniModelLoaderException {
+	public static UniModel loadUEM(String filename) throws IOException, UniModelLoaderException {
 		if (!filename.contains(".uem")) {
 			throw new IOException("loadUNI() cannot load from files, which aren't .uem!\n");
 		} else {
-			return readUEM(new File(filename));
+			return loadUEM(new File(filename));
 		}
 	}
 	
-	public static UniModel readUEM(File file) throws IOException, UniModelLoaderException {
+	public static UniModel loadUEM(File file) throws IOException, UniModelLoaderException {
 		FileInputStream fis = new FileInputStream(file);
 		DataInputStream dis = new DataInputStream(fis);
-		return readUEM(dis);
+		return loadUEM(dis);
 	}
 	
-	public static UniModel readUEM(DataInputStream dis) throws IOException, UniModelLoaderException {
+	public static UniModel loadUEM(DataInputStream dis) throws IOException, UniModelLoaderException {
 		byte b;
 		if ((b = dis.readByte()) == START) {
-			System.out.println("START");
 			if ((b = dis.readByte()) == MESH) {
-				System.out.println(" MESH");
 				UniMesh[] meshes;
-				meshes = readMeshesUEM(dis);
+				meshes = loadMeshesUEM(dis);
 				return new UniModel(meshes);
 			} else {
 				throw new UniModelLoaderException(String.format("Unknown Flag after \"START\"-Flag: %d\n", b));
@@ -63,7 +123,7 @@ public final class UniModelLoader {
 		}
 	}
 	
-	private static UniMesh[] readMeshesUEM(DataInputStream dis) throws IOException, UniModelLoaderException {
+	private static UniMesh[] loadMeshesUEM(DataInputStream dis) throws IOException, UniModelLoaderException {
 		byte b;
 		
 		UniMesh[] meshes;
@@ -74,13 +134,10 @@ public final class UniModelLoader {
 		int[] ind;
 		
 		int number = dis.readInt();
-		System.out.println(" NUMBER: " + number);
 		meshes = new UniMesh[number];
 		for (int m = 0; m < number; m++) {
 			if ((b = dis.readByte()) == ELEMENTS) {
-				System.out.println("  ELEMENTS");
 				int elements = dis.readInt();
-				System.out.println("  NUMBER: " + elements);
 				v = new UniVertex3f[elements];
 				n = new UniNormal3f[elements];
 				c = new UniColor3f[elements];
@@ -89,45 +146,29 @@ public final class UniModelLoader {
 					byte flag = dis.readByte();
 					switch(flag) {
 					case VERTICES:
-						System.out.println("   VERTICES[" + e + "]");
 						float f1 = dis.readFloat();
 						float f2 = dis.readFloat();
 						float f3 = dis.readFloat();
-						System.out.println("    F " + f1);
-						System.out.println("    F " + f2);
-						System.out.println("    F " + f3);
 						v[e] = new UniVertex3f(f1, f2, f3);
 						break;
 					case NORMALS:
-						System.out.println("   NORMALS[" + e + "]");
 						float n1 = dis.readFloat();
 						float n2 = dis.readFloat();
 						float n3 = dis.readFloat();
-						System.out.println("    F " + n2);
-						System.out.println("    F " + n2);
-						System.out.println("    F " + n3);
 						n[e] = new UniNormal3f(n1, n2, n3);
 						break;
 					case COLORS:
-						System.out.println("   COLORS[" + e + "]");
 						float c1 = dis.readFloat();
 						float c2 = dis.readFloat();
 						float c3 = dis.readFloat();
-						System.out.println("    F " + c1);
-						System.out.println("    F " + c2);
-						System.out.println("    F " + c3);
 						c[e] = new UniColor3f(c1, c2, c3);
 						break;
 					case TEXCOORDS:
-						System.out.println("   TEXCOORDS[" + e + "]");
 						float t1 = dis.readFloat();
 						float t2 = dis.readFloat();
-						System.out.println("    F " + t1);
-						System.out.println("    F " + t2);
 						t[e] = new UniTexCoord2f(t1, t2);
 						break;
 					case END_ELEMENT:
-						System.out.println("   END OF ELEMENT[" + e + "]\n");
 						e++;
 						break;
 					default:
@@ -135,9 +176,7 @@ public final class UniModelLoader {
 					}
 				}
 				if ((b = dis.readByte()) == INDICES) {
-					System.out.println("  INDICES");
 					int indices = dis.readInt();
-					System.out.println("  NUMBER: " + indices);
 					ind = new int[indices];
 					int num = 0;
 					for (int i = 0; i < indices; i++) {
@@ -164,16 +203,12 @@ public final class UniModelLoader {
 					rend.create();
 					meshes[m] = new UniMesh(rend);
 				} catch (UniGLVersionException e) {
-					System.err.printf("After Loading Mesh, i could not create it from data.\n");
+					UniPrint.printerrf("After Loading Mesh, i could not create it from data.\n");
 					e.printStackTrace();
 				}
 			} else {
 				throw new UniModelLoaderException(String.format("Unknown Flag after \"MESH\"-Flag: %d\n", b));
 			}
-			while(dis.readByte() != END) { 
-				System.out.println("End of File could not be found yet.");
-			}
-			System.out.println("END");
 		}
 		return meshes;
 	}

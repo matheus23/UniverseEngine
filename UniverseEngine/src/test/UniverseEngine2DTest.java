@@ -39,7 +39,6 @@ import org.universeengine.opengl.shader.UniUniform;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
 
-
 public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 	
 	public static final int WIDTH = 800;
@@ -49,7 +48,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 	private UniShaderProgram shader;
 	private boolean pressedF2 = false;
 	private UniLoop loop;
-	private UniTexture yo;
+	private UniTexture tex;
 	private SimpleShape triangle;
 	private UniUniform uniform;
 	
@@ -82,9 +81,10 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 		shader = new UniShaderProgram(
 				new UniShader("vertex_shader.vert", UniShader.VERTEX_SHADER),
 				new UniShader("fragment_shader.frag", UniShader.FRAGMENT_SHADER));
-		yo = UniTextureLoader.loadTexture("yo.png");
+		// The Folder "res" is ignored by GIT, you will have to create it on your own.
+		tex = UniTextureLoader.loadTexture("res/yo.png");
 		uniform = new UniUniform("color", shader);
-		triangle = new SimpleShape(yo);
+		triangle = new SimpleShape(tex);
 	}
 
 	public void tick() {
@@ -120,7 +120,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 		glEnd();
 		shader.unuse();
 		
-		yo.bind();
+		tex.bind();
 		glBegin(GL_QUADS);
 		{
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -130,7 +130,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 			glTexCoord2f(0f, 0f); glVertex2f(- 20.0f, + 20.0f);
 		}
 		glEnd();
-		yo.unbind();
+		tex.unbind();
 		glColor4f(1f, 0f, 0f, 1f);
 		triangle.render();
 	}

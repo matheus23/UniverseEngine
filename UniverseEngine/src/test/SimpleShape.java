@@ -10,6 +10,10 @@ import org.universeengine.opengl.vertex.UniColor4f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
 import org.universeengine.opengl.vertex.UniVertex3f;
 
+/**
+ * This Class is only for Testing!
+ * @author matheus23
+ */
 public class SimpleShape {
 	
 	public UniMeshRenderer rend1;

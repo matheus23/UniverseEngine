@@ -58,7 +58,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		setupOriginLines();
 		
 		try {
-			model = UniModelLoader.readUEM("cube_model.uem");
+			model = UniModelLoader.loadUEM("cube_model.uem");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (UniModelLoaderException e) {
