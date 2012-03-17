@@ -9,7 +9,7 @@ public class UniverseEngineModelPrinter {
 
 	public static void main(String[] args) {
 		try {
-			UniModelLoader.printUEM(args[0]);
+			UniModelLoader.UEM.print(args[0]);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (UniModelLoaderException e) {
