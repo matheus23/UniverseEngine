@@ -31,7 +31,7 @@ import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.universeengine.UniverseEngineEnterPoint;
-import org.universeengine.display.UniDisplay;
+import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
 import org.universeengine.opengl.shader.UniShader;
 import org.universeengine.opengl.shader.UniShaderProgram;
@@ -44,7 +44,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 600;
 	
-	private UniDisplay display;
+	private UniAWTDisplay display;
 	private UniShaderProgram shader;
 	private boolean pressedF2 = false;
 	private UniLoop loop;
@@ -53,7 +53,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 	private UniUniform uniform;
 	
 	public UniverseEngine2DTest() {
-		display = new UniDisplay(WIDTH, HEIGHT, "OpenGLTest");
+		display = new UniAWTDisplay(WIDTH, HEIGHT, "OpenGLTest");
 		loop = new UniLoop(this, display);
 		loop.start();
 	}
@@ -89,7 +89,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 
 	public void tick() {
 		if (Keyboard.isKeyDown(Keyboard.KEY_F2) && !pressedF2) {
-			display.saveScreenshot("screenshot0.png");
+			loop.saveScreenshot("screenshot0.png");
 			pressedF2 = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_F2)) {

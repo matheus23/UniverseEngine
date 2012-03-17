@@ -1,5 +1,19 @@
 package org.universeengine.display;
 
+import static org.lwjgl.opengl.GL11.GL_FRONT;
+import static org.lwjgl.opengl.GL11.GL_RGB;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11.glReadBuffer;
+import static org.lwjgl.opengl.GL11.glReadPixels;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import javax.imageio.ImageIO;
+
+import org.lwjgl.BufferUtils;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.util.UniPrint;
 import org.universeengine.util.UniPrintable;
@@ -65,6 +79,25 @@ public class UniLoop implements UniPrintable {
 		System.gc();
 		System.runFinalization();
 		if (display != null) display.destroy();
+	}
+
+	/**
+	 * Saves a Screenshot of OpenGL's Front-Buffer.
+	 * 
+	 * @param filepath Filepath to save the Screenshot to.
+	 */
+	public void saveScreenshot(String filepath) {
+		glReadBuffer(GL_FRONT);
+		int width = display.getWidth();
+		int height = display.getHeight();
+		int bpp = display.getBPP();
+		UniPrint.printoutf(this, 
+			"Saving screenshot... Bytes per Pixel: %d\n", bpp);
+		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+		SaveScreenshotThread sst = new SaveScreenshotThread(buffer, width,
+				height, bpp, filepath, "PNG");
+		sst.start();
 	}
 	
 	/**
@@ -270,6 +303,60 @@ public class UniLoop implements UniPrintable {
 				timeNano = timeNano < 0 ? timeNano+1000000L : timeNano;
 			}
 			
+		}
+	}
+
+	private class SaveScreenshotThread extends Thread implements UniPrintable {
+
+		private ByteBuffer buffer;
+		private int width;
+		private int height;
+		private int bpp;
+		private String location;
+		private String format;
+
+		public SaveScreenshotThread(ByteBuffer buffer, int width, int height,
+				int bpp, String location, String format) {
+			this.buffer = buffer;
+			this.width = width;
+			this.height = height;
+			this.bpp = bpp;
+			this.location = location;
+			this.format = format;
+		}
+
+		public void run() {
+			File file = new File(location);
+			BufferedImage image = new BufferedImage(width, height,
+					BufferedImage.TYPE_INT_ARGB);
+
+			UniPrint.printoutf(this,
+					"Saving with w:%d h:%d\n",
+					width, height);
+
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					int i = (x + (width * y)) * bpp;
+					int r = buffer.get(i) & 0xFF;
+					int g = buffer.get(i + 1) & 0xFF;
+					int b = buffer.get(i + 2) & 0xFF;
+					image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16)
+							| (g << 8) | b);
+				}
+			}
+
+			try {
+				ImageIO.write(image, format, file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			UniPrint.printoutf(this,
+					"SaveScreenshotThread finished! Saved into \"%s\".\n",
+					location);
+		}
+		
+		public String getClassName() {
+			return getClass().getSimpleName();
 		}
 	}
 
