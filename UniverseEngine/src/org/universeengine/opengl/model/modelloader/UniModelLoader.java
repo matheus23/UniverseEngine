@@ -2,6 +2,7 @@ package org.universeengine.opengl.model.modelloader;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -512,41 +513,46 @@ public final class UniModelLoader {
 		
 	}
 	
+	/**
+	 * This 3ds Loader is currently NOT WORKING!
+	 * (Tested).
+	 * For experiments I created UniModelLoader.printHEXData(String)
+	 */
 	public static class L3DS {
 		
-		public static final short MAIN_CHUNK = 0x4D4D;
-		public static final short L3D_EDITOR_CHUNK = 0x3D3D;
-		public static final short OBJECT_BLOCK = 0x4000;
-		public static final short TRIANGULAR_MESH = 0x4100;
-		public static final short VERTICES_LIST = 0x4110;
-		public static final short FACES_DESCRIPTION = 0x4120;
-		public static final short FACES_MATERIAL = 0x4130;
-		public static final short MAPPING_COORDINATES_LIST = 0x4140;
-		public static final short SMOOTHING_GROUP_LIST = 0x4150;
-		public static final short LOCAL_COORDINATES_SYSTEM = 0x4160;
-		public static final short LIGHT = 0x4600;
-		public static final short SPOTLIGHT = 0x4610;
-		public static final short CAMERA = 0x4700;
-		public static final short MATERIAL_BLOCK = (short) 0xAFFF;
-		public static final short MATERIAL_NAME = (short) 0xA000;
-		public static final short AMBIENT_COLOR = (short) 0xA010;
-		public static final short DIFFUSE_COLOR = (short) 0xA020;
-		public static final short SPECULAR_COLOR = (short) 0xA030;
-		public static final short TEXTURE_MAP_1 = (short) 0xA2000;
-		public static final short BUMP_MAP = (short) 0xA230;
-		public static final short REFLECTION_MAP = (short) 0xA220;
-		public static final short MAPPING_FILENAME = (short) 0xA300;
-		public static final short MAPPING_PARAMETERS = (short) 0xA351;
-		public static final short KEYFRAMER_CHUNK = (short) 0xB000;
-		public static final short MESH_INFORMATION_BLOCK = (short) 0xB002;
-		public static final short SPOT_LIGHT_INFORMATION_BLOCK = (short) 0xB007;
-		public static final short FRAMES = (short) 0xB008;
-		public static final short OBJECT_NAME = (short) 0xB010;
-		public static final short OBJECT_PIVOT_POINT = (short) 0xB013;
-		public static final short POSITION_TRACK = (short) 0xB020;
-		public static final short ROTATION_TRACK = (short) 0xB021;
-		public static final short SCALE_TRACK = (short) 0xB022;
-		public static final short HIERACHY_POSITION = (short) 0xB030;
+		public static final int MAIN_CHUNK = 0x4D4D;
+		public static final int L3D_EDITOR_CHUNK = 0x3D3D;
+		public static final int OBJECT_BLOCK = 0x4000;
+		public static final int TRIANGULAR_MESH = 0x4100;
+		public static final int VERTICES_LIST = 0x4110;
+		public static final int FACES_DESCRIPTION = 0x4120;
+		public static final int FACES_MATERIAL = 0x4130;
+		public static final int MAPPING_COORDINATES_LIST = 0x4140;
+		public static final int SMOOTHING_GROUP_LIST = 0x4150;
+		public static final int LOCAL_COORDINATES_SYSTEM = 0x4160;
+		public static final int LIGHT = 0x4600;
+		public static final int SPOTLIGHT = 0x4610;
+		public static final int CAMERA = 0x4700;
+		public static final int MATERIAL_BLOCK = 0xAFFF;
+		public static final int MATERIAL_NAME = 0xA000;
+		public static final int AMBIENT_COLOR = 0xA010;
+		public static final int DIFFUSE_COLOR = 0xA020;
+		public static final int SPECULAR_COLOR = 0xA030;
+		public static final int TEXTURE_MAP_1 = 0xA2000;
+		public static final int BUMP_MAP = 0xA230;
+		public static final int REFLECTION_MAP = 0xA220;
+		public static final int MAPPING_FILENAME = 0xA300;
+		public static final int MAPPING_PARAMETERS = 0xA351;
+		public static final int KEYFRAMER_CHUNK = 0xB000;
+		public static final int MESH_INFORMATION_BLOCK = 0xB002;
+		public static final int SPOT_LIGHT_INFORMATION_BLOCK = 0xB007;
+		public static final int FRAMES = 0xB008;
+		public static final int OBJECT_NAME = 0xB010;
+		public static final int OBJECT_PIVOT_POINT = 0xB013;
+		public static final int POSITION_TRACK = 0xB020;
+		public static final int ROTATION_TRACK = 0xB021;
+		public static final int SCALE_TRACK = 0xB022;
+		public static final int HIERACHY_POSITION = 0xB030;
 		
 		public static void print(String filename) throws IOException, UniModelLoaderException {
 			if (!filename.contains(".3ds")) {
@@ -567,12 +573,12 @@ public final class UniModelLoader {
 		}
 		
 		public static void print(DataInputStream dis) throws IOException, UniModelLoaderException {
-			short s;
-			if ((s = dis.readShort()) == MAIN_CHUNK) {
+			int i;
+			if ((i = dis.readUnsignedShort()) == MAIN_CHUNK) {
 				System.out.println("MAIN_CHUNK");
-				if ((s = dis.readShort()) == L3D_EDITOR_CHUNK) {
+				if ((i = dis.readUnsignedShort()) == L3D_EDITOR_CHUNK) {
 					System.out.println(" 3D_EDITOR_CHUNK");
-					if ((s = dis.readShort()) == OBJECT_BLOCK) {
+					if ((i = dis.readUnsignedShort()) == OBJECT_BLOCK) {
 						System.out.println("  OBJECT_BLOCK");
 						char c = 0;
 						StringBuffer objectName = new StringBuffer(); 
@@ -581,11 +587,11 @@ public final class UniModelLoader {
 							objectName.append(c);
 						} while (c != '\0');
 						System.out.println(objectName.toString());
-						if ((s = dis.readShort()) == TRIANGULAR_MESH) {
+						if ((i = dis.readUnsignedShort()) == TRIANGULAR_MESH) {
 							System.out.println("   TRIANGULAR_MESH");
-							if ((s = dis.readShort()) == VERTICES_LIST) {
+							if ((i = dis.readUnsignedShort()) == VERTICES_LIST) {
 								System.out.println("    VERTICES_LIST");
-								short vertices = dis.readShort();
+								int vertices = dis.readUnsignedShort();
 								System.out.println("    NUMBER: " + vertices);
 								for (int v = 0; v < vertices; v++) {
 									System.out.println("     VERTEX[" + v + "]");
@@ -595,25 +601,25 @@ public final class UniModelLoader {
 									System.out.println();
 								}
 							} else {
-								throw new UniModelLoaderException(String.format("Unknown Flag after TRIANGULAR_MESH: %d\n", s));
+								throw new UniModelLoaderException(String.format("Unknown Flag after TRIANGULAR_MESH: %x\n", i));
 							}
-							if ((s = dis.readShort()) == FACES_DESCRIPTION) {
+							if ((i = dis.readUnsignedShort()) == FACES_DESCRIPTION) {
 								System.out.println("    FACES_DESCRIPTION");
-								short descriptions = dis.readShort();
+								int descriptions = dis.readUnsignedShort();
 								System.out.println("    NUMBER: " + descriptions);
 								for (int d = 0; d < descriptions; d++) {
 									System.out.println("     FACE DESCRIPTION[" + d + "]");
-									System.out.println("      S " + dis.readShort());
-									System.out.println("      S " + dis.readShort());
-									System.out.println("      S " + dis.readShort());
-									System.out.println("      FLAG " + dis.readShort());
+									System.out.println("      S " + dis.readUnsignedShort());
+									System.out.println("      S " + dis.readUnsignedShort());
+									System.out.println("      S " + dis.readUnsignedShort());
+									System.out.println("      FLAG " + dis.readUnsignedShort());
 									System.out.println();
 								}
 							}
 							// Jump to MAPPING_COORDINATES_LIST
-							while((s = dis.readShort()) != MAPPING_COORDINATES_LIST);
+							seekShort(dis, MAPPING_COORDINATES_LIST);
 							System.out.println("    MAPPING_COORDINATES_LIST");
-							short coords = dis.readShort();
+							int coords = dis.readUnsignedShort();
 							System.out.println("    NUMBER: " + coords);
 							for (int t = 0; t < coords; t++) {
 								System.out.println("     TEX_COOD[" + t + "]");
@@ -622,19 +628,50 @@ public final class UniModelLoader {
 								System.out.println();
 							}
 						} else {
-							throw new UniModelLoaderException(String.format("Unkown Flag after OBJEC_BLOCK: %d\n", s));
+							throw new UniModelLoaderException(String.format("Unkown Flag after OBJEC_BLOCK: %x\n", i));
 						}
 					} else {
-						throw new UniModelLoaderException(String.format("Unknown Flag after 3D_EDITOR_CHUNK: %d\n", s));
+						throw new UniModelLoaderException(String.format("Unknown Flag after 3D_EDITOR_CHUNK: %x\n", i));
 					}
 				} else {
-					throw new UniModelLoaderException(String.format("Unknown Flag after MAIN_CHUNK-Flag: %d\n", s));
+					throw new UniModelLoaderException(String.format("Unknown Flag after MAIN_CHUNK-Flag: %x\n", i));
 				}
 			} else {
-				throw new UniModelLoaderException(String.format("Unknown Flag at the beginning of the File: %d", s));
+				throw new UniModelLoaderException(String.format("Unknown Flag at the beginning of the File: %x", i));
 			}
 		}
 		
+		public static int seekShort(DataInputStream dis, int s) throws IOException {
+			while(dis.readUnsignedShort() != s) {};
+			return s;
+		}
+		
+	}
+	
+	public static void printHEXData(String filename) throws IOException {
+		File file = new File(filename);
+		if (!file.exists()) {
+			System.err.println("File does not exist!");
+			return;
+		}
+		FileInputStream fis = new FileInputStream(file);
+		DataInputStream dis = new DataInputStream(fis);
+		while(true) {
+			try {
+				System.out.printf("%2x %2x %2x %2x  %2x %2x %2x %2x\n",
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte(),
+						dis.readUnsignedByte());
+			} catch(EOFException eof) {
+				System.out.println("END");
+				break;
+			}
+		}
 	}
 	
 }

@@ -54,8 +54,10 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private UniCamera cam;
 	private UniModel model;
 	private UniDisplayList linesDL; 
+	private String modelpath;
 
-	public UniverseEngineModelViewer() {
+	public UniverseEngineModelViewer(String modelpath) {
+		this.modelpath = modelpath;
 		display = new UniAWTDisplay(800, 600, "UniverseEngine 3D Test");
 		loop = new UniLoop(this, display);
 		loop.start();
@@ -80,7 +82,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		setupOriginLines();
 		
 		try {
-			model = UniModelLoader.UEM.load("cube_model.uem");
+			model = UniModelLoader.UEM.load(modelpath);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (UniModelLoaderException e) {
@@ -171,7 +173,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public static void main(String[] args) {
-		new UniverseEngineModelViewer();
+		new UniverseEngineModelViewer("cube_model.uem");
 	}
 
 }
