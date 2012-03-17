@@ -18,13 +18,13 @@ import org.universeengine.opengl.vertex.UniVertex3f;
 import org.universeengine.util.UniPrint;
 
 /**
- * Short: to load UEM-Models, use loadUEM().
+ * Short: to load UEM-Models, use UEM.load().
  * 
  * Long:
  * This is the ModelLoader for loading .uem ModelFiles (UniverseEngine Model)
- * The UEM File Structure can be printed with printUEM(String filename).
+ * The UEM File Structure can be printed with UEM.print(String filename).
  * If you have not got any UEM Files to print, just call
- * writeUniCubeUEM(String filename). It will create you a test File,
+ * UEM.writeUniCube(String filename). It will create you a test File,
  * which has exactly the same Vertices as the UniCube class.
  * 
  * The final UEM File could look as following:
@@ -61,7 +61,7 @@ import org.universeengine.util.UniPrint;
  * END
  * 
  * REMEMBER: This File structure is BINARY and is not an ASCII File.
- * It cannot be seen in a Text-Editor, however, you can call printUEM(String file)
+ * It cannot be seen in a Text-Editor, however, you can call UEM.print(String file)
  * to print everything, so it looks like above.
  * In the real UEM File, the START/END/MESH/ELEMENTS Flag will be bytes,
  * with the values of the final Fields in this class.
@@ -98,9 +98,13 @@ public final class UniModelLoader {
 
 		public static UniModel load(String filename) throws IOException, UniModelLoaderException {
 			if (!filename.contains(".uem")) {
-				throw new IOException("loadUNI() cannot load from files, which aren't .uem!\n");
+				throw new IOException(String.format("UEM.load() cannot load from files, which aren't .uem: %s\n", filename));
 			} else {
-				return load(new File(filename));
+				File file = new File(filename);
+				if (!file.exists()) {
+					throw new IOException(String.format("The given File %s doesn't exist!\n", filename));
+				}
+				return load(file);
 			}
 		}
 		
@@ -508,7 +512,128 @@ public final class UniModelLoader {
 		
 	}
 	
-	public static class THREEDS {
+	public static class L3DS {
+		
+		public static final short MAIN_CHUNK = 0x4D4D;
+		public static final short L3D_EDITOR_CHUNK = 0x3D3D;
+		public static final short OBJECT_BLOCK = 0x4000;
+		public static final short TRIANGULAR_MESH = 0x4100;
+		public static final short VERTICES_LIST = 0x4110;
+		public static final short FACES_DESCRIPTION = 0x4120;
+		public static final short FACES_MATERIAL = 0x4130;
+		public static final short MAPPING_COORDINATES_LIST = 0x4140;
+		public static final short SMOOTHING_GROUP_LIST = 0x4150;
+		public static final short LOCAL_COORDINATES_SYSTEM = 0x4160;
+		public static final short LIGHT = 0x4600;
+		public static final short SPOTLIGHT = 0x4610;
+		public static final short CAMERA = 0x4700;
+		public static final short MATERIAL_BLOCK = (short) 0xAFFF;
+		public static final short MATERIAL_NAME = (short) 0xA000;
+		public static final short AMBIENT_COLOR = (short) 0xA010;
+		public static final short DIFFUSE_COLOR = (short) 0xA020;
+		public static final short SPECULAR_COLOR = (short) 0xA030;
+		public static final short TEXTURE_MAP_1 = (short) 0xA2000;
+		public static final short BUMP_MAP = (short) 0xA230;
+		public static final short REFLECTION_MAP = (short) 0xA220;
+		public static final short MAPPING_FILENAME = (short) 0xA300;
+		public static final short MAPPING_PARAMETERS = (short) 0xA351;
+		public static final short KEYFRAMER_CHUNK = (short) 0xB000;
+		public static final short MESH_INFORMATION_BLOCK = (short) 0xB002;
+		public static final short SPOT_LIGHT_INFORMATION_BLOCK = (short) 0xB007;
+		public static final short FRAMES = (short) 0xB008;
+		public static final short OBJECT_NAME = (short) 0xB010;
+		public static final short OBJECT_PIVOT_POINT = (short) 0xB013;
+		public static final short POSITION_TRACK = (short) 0xB020;
+		public static final short ROTATION_TRACK = (short) 0xB021;
+		public static final short SCALE_TRACK = (short) 0xB022;
+		public static final short HIERACHY_POSITION = (short) 0xB030;
+		
+		public static void print(String filename) throws IOException, UniModelLoaderException {
+			if (!filename.contains(".3ds")) {
+				throw new UniModelLoaderException(String.format
+						("The filepath %s, is not from type 3ds!\n", filename));
+			}
+			File file = new File(filename);
+			if (!file.exists()) {
+				throw new IOException(String.format("The given File %s does not exist!\n", filename));
+			}
+			print(file);
+		}
+		
+		public static void print(File file) throws IOException, UniModelLoaderException {
+			FileInputStream fis = new FileInputStream(file);
+			DataInputStream dis = new DataInputStream(fis);
+			print(dis);
+		}
+		
+		public static void print(DataInputStream dis) throws IOException, UniModelLoaderException {
+			short s;
+			if ((s = dis.readShort()) == MAIN_CHUNK) {
+				System.out.println("MAIN_CHUNK");
+				if ((s = dis.readShort()) == L3D_EDITOR_CHUNK) {
+					System.out.println(" 3D_EDITOR_CHUNK");
+					if ((s = dis.readShort()) == OBJECT_BLOCK) {
+						System.out.println("  OBJECT_BLOCK");
+						char c = 0;
+						StringBuffer objectName = new StringBuffer(); 
+						do {
+							c = dis.readChar();
+							objectName.append(c);
+						} while (c != '\0');
+						System.out.println(objectName.toString());
+						if ((s = dis.readShort()) == TRIANGULAR_MESH) {
+							System.out.println("   TRIANGULAR_MESH");
+							if ((s = dis.readShort()) == VERTICES_LIST) {
+								System.out.println("    VERTICES_LIST");
+								short vertices = dis.readShort();
+								System.out.println("    NUMBER: " + vertices);
+								for (int v = 0; v < vertices; v++) {
+									System.out.println("     VERTEX[" + v + "]");
+									System.out.println("      F " + dis.readFloat());
+									System.out.println("      F " + dis.readFloat());
+									System.out.println("      F " + dis.readFloat());
+									System.out.println();
+								}
+							} else {
+								throw new UniModelLoaderException(String.format("Unknown Flag after TRIANGULAR_MESH: %d\n", s));
+							}
+							if ((s = dis.readShort()) == FACES_DESCRIPTION) {
+								System.out.println("    FACES_DESCRIPTION");
+								short descriptions = dis.readShort();
+								System.out.println("    NUMBER: " + descriptions);
+								for (int d = 0; d < descriptions; d++) {
+									System.out.println("     FACE DESCRIPTION[" + d + "]");
+									System.out.println("      S " + dis.readShort());
+									System.out.println("      S " + dis.readShort());
+									System.out.println("      S " + dis.readShort());
+									System.out.println("      FLAG " + dis.readShort());
+									System.out.println();
+								}
+							}
+							// Jump to MAPPING_COORDINATES_LIST
+							while((s = dis.readShort()) != MAPPING_COORDINATES_LIST);
+							System.out.println("    MAPPING_COORDINATES_LIST");
+							short coords = dis.readShort();
+							System.out.println("    NUMBER: " + coords);
+							for (int t = 0; t < coords; t++) {
+								System.out.println("     TEX_COOD[" + t + "]");
+								System.out.println("      F " + dis.readFloat());
+								System.out.println("      F " + dis.readFloat());
+								System.out.println();
+							}
+						} else {
+							throw new UniModelLoaderException(String.format("Unkown Flag after OBJEC_BLOCK: %d\n", s));
+						}
+					} else {
+						throw new UniModelLoaderException(String.format("Unknown Flag after 3D_EDITOR_CHUNK: %d\n", s));
+					}
+				} else {
+					throw new UniModelLoaderException(String.format("Unknown Flag after MAIN_CHUNK-Flag: %d\n", s));
+				}
+			} else {
+				throw new UniModelLoaderException(String.format("Unknown Flag at the beginning of the File: %d", s));
+			}
+		}
 		
 	}
 	
