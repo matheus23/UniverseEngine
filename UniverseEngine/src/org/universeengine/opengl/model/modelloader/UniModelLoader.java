@@ -1,12 +1,17 @@
 package org.universeengine.opengl.model.modelloader;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.universeengine.exceptions.UniGLVersionException;
 import org.universeengine.opengl.model.UniMesh;
@@ -19,7 +24,7 @@ import org.universeengine.opengl.vertex.UniVertex3f;
 import org.universeengine.util.UniPrint;
 
 /**
- * Short: to load UEM-Models, use UEM.load().
+ * Short: to load UEM-Models, use UEM.load(), to load other formats use the static classes inside.
  * 
  * Long:
  * This is the ModelLoader for loading .uem ModelFiles (UniverseEngine Model)
@@ -99,11 +104,11 @@ public final class UniModelLoader {
 
 		public static UniModel load(String filename) throws IOException, UniModelLoaderException {
 			if (!filename.contains(".uem")) {
-				throw new IOException(String.format("UEM.load() cannot load from files, which aren't .uem: %s\n", filename));
+				throw new IOException(String.format("UEM.load() cannot load from files, which aren't .uem: %s", filename));
 			} else {
 				File file = new File(filename);
 				if (!file.exists()) {
-					throw new IOException(String.format("The given File %s doesn't exist!\n", filename));
+					throw new IOException(String.format("The given File %s doesn't exist! Maybe its located somwhere else?", filename));
 				}
 				return load(file);
 			}
@@ -123,10 +128,10 @@ public final class UniModelLoader {
 					meshes = loadMeshes(dis);
 					return new UniModel(meshes);
 				} else {
-					throw new UniModelLoaderException(String.format("Unknown Flag after \"START\"-Flag: %d\n", b));
+					throw new UniModelLoaderException(String.format("Unknown Flag after \"START\"-Flag: %d", b));
 				}
 			} else {
-				throw new UniModelLoaderException(String.format("\"START\"-Flag is missing! Instead i got: %d\n", b));
+				throw new UniModelLoaderException(String.format("\"START\"-Flag is missing! Instead i got: %d", b));
 			}
 		}
 		
@@ -179,7 +184,7 @@ public final class UniModelLoader {
 							e++;
 							break;
 						default:
-							throw new UniModelLoaderException(String.format("Unknown data in ELEMENT: %d\n", flag));
+							throw new UniModelLoaderException(String.format("Unknown data in ELEMENT: %d", flag));
 						}
 					}
 					if ((b = dis.readByte()) == INDICES) {
@@ -192,7 +197,7 @@ public final class UniModelLoader {
 							ind[i] = num;
 						}
 					} else {
-						throw new UniModelLoaderException(String.format("Unknown Flag after \"ELEMENTS\"-Flag: %d\n", b));
+						throw new UniModelLoaderException(String.format("Unknown Flag after \"ELEMENTS\"-Flag: %d", b));
 					}
 					if (v[0] == null) {
 						v = null;
@@ -210,11 +215,11 @@ public final class UniModelLoader {
 						rend.create();
 						meshes[m] = new UniMesh(rend);
 					} catch (UniGLVersionException e) {
-						UniPrint.printerrf("After Loading Mesh, i could not create it from data.\n");
+						UniPrint.printerrf("After Loading Mesh, i could not create it from data.");
 						e.printStackTrace();
 					}
 				} else {
-					throw new UniModelLoaderException(String.format("Unknown Flag after \"MESH\"-Flag: %d\n", b));
+					throw new UniModelLoaderException(String.format("Unknown Flag after \"MESH\"-Flag: %d", b));
 				}
 			}
 			return meshes;
@@ -222,7 +227,7 @@ public final class UniModelLoader {
 		
 		public static void print(String filename) throws IOException, UniModelLoaderException {
 			if (!filename.contains(".uem")) {
-				throw new IOException("loadUNI() cannot load from files, which aren't .uem!\n");
+				throw new IOException("loadUNI() cannot load from files, which aren't .uem!");
 			} else {
 				print(new File(filename));
 			}
@@ -242,10 +247,10 @@ public final class UniModelLoader {
 					System.out.println(" MESH");
 					printMeshes(dis);
 				} else {
-					throw new UniModelLoaderException(String.format("Unknown Flag after \"START\"-Flag: %d\n", b));
+					throw new UniModelLoaderException(String.format("Unknown Flag after \"START\"-Flag: %d", b));
 				}
 			} else {
-				throw new UniModelLoaderException(String.format("\"START\"-Flag is missing! Instead i got: %d\n", b));
+				throw new UniModelLoaderException(String.format("\"START\"-Flag is missing! Instead i got: %d", b));
 			}
 		}
 		
@@ -290,7 +295,7 @@ public final class UniModelLoader {
 							e++;
 							break;
 						default:
-							throw new UniModelLoaderException(String.format("Unknown data in ELEMENT: %d\n", flag));
+							throw new UniModelLoaderException(String.format("Unknown data in ELEMENT: %d", flag));
 						}
 					}
 					if ((b = dis.readByte()) == INDICES) {
@@ -301,10 +306,10 @@ public final class UniModelLoader {
 							System.out.println("   I " + i + " = " + dis.readInt());
 						}
 					} else {
-						throw new UniModelLoaderException(String.format("Unknown Flag after \"ELEMENTS\"-Flag: %d\n", b));
+						throw new UniModelLoaderException(String.format("Unknown Flag after \"ELEMENTS\"-Flag: %d", b));
 					}
 				} else {
-					throw new UniModelLoaderException(String.format("Unknown Flag after \"MESH\"-Flag: %d\n", b));
+					throw new UniModelLoaderException(String.format("Unknown Flag after \"MESH\"-Flag: %d", b));
 				}
 				while(dis.readByte() != END) { 
 					System.out.println("End of File could not be found yet.");
@@ -315,11 +320,11 @@ public final class UniModelLoader {
 		
 		public static void writeUniCube(String filename) throws IOException {
 			if (!filename.contains(".uem")) {
-				throw new IOException("writeUNI() does not allow any other formats, then .uem!\n");
+				throw new IOException("writeUNI() does not allow any other formats, then .uem!");
 			} else {
 				File file = new File(filename);
 				if (!file.createNewFile()) {
-					throw new IOException("Either the given File already exists, or the operation failed.\n");
+					throw new IOException("Either the given File already exists, or the operation failed.");
 				} else {
 					writeUniCube(new File(filename));
 				}
@@ -561,7 +566,7 @@ public final class UniModelLoader {
 			}
 			File file = new File(filename);
 			if (!file.exists()) {
-				throw new IOException(String.format("The given File %s does not exist!\n", filename));
+				throw new IOException(String.format("The given File %s does not exist!", filename));
 			}
 			print(file);
 		}
@@ -601,7 +606,7 @@ public final class UniModelLoader {
 									System.out.println();
 								}
 							} else {
-								throw new UniModelLoaderException(String.format("Unknown Flag after TRIANGULAR_MESH: %x\n", i));
+								throw new UniModelLoaderException(String.format("Unknown Flag after TRIANGULAR_MESH: %x", i));
 							}
 							if ((i = dis.readUnsignedShort()) == FACES_DESCRIPTION) {
 								System.out.println("    FACES_DESCRIPTION");
@@ -628,13 +633,13 @@ public final class UniModelLoader {
 								System.out.println();
 							}
 						} else {
-							throw new UniModelLoaderException(String.format("Unkown Flag after OBJEC_BLOCK: %x\n", i));
+							throw new UniModelLoaderException(String.format("Unkown Flag after OBJEC_BLOCK: %x", i));
 						}
 					} else {
-						throw new UniModelLoaderException(String.format("Unknown Flag after 3D_EDITOR_CHUNK: %x\n", i));
+						throw new UniModelLoaderException(String.format("Unknown Flag after 3D_EDITOR_CHUNK: %x", i));
 					}
 				} else {
-					throw new UniModelLoaderException(String.format("Unknown Flag after MAIN_CHUNK-Flag: %x\n", i));
+					throw new UniModelLoaderException(String.format("Unknown Flag after MAIN_CHUNK-Flag: %x", i));
 				}
 			} else {
 				throw new UniModelLoaderException(String.format("Unknown Flag at the beginning of the File: %x", i));
@@ -646,6 +651,144 @@ public final class UniModelLoader {
 			return s;
 		}
 		
+	}
+	
+	public static class OBJ {
+		
+		public static UniModel load(String filepath) throws IOException, UniModelLoaderException {
+			if (!filepath.contains(".obj")) {
+				throw new UniModelLoaderException(String.format("The given File %s is not from type .obj", filepath));
+			}
+			File file = new File(filepath);
+			if (!file.exists()) {
+				throw new UniModelLoaderException(String.format("The given File %s does not exist!", filepath));
+			}
+			return load(file);
+		}
+		
+		public static UniModel load(File file) throws IOException, UniModelLoaderException {
+			FileReader reader = new FileReader(file);
+			BufferedReader read = new BufferedReader(reader);
+			return load(read);
+		}
+		
+		public static UniModel load(BufferedReader reader) throws IOException, UniModelLoaderException {
+			String line;
+			StringTokenizer st;
+			String prefix;
+			List<UniVertex3f> v = new ArrayList<UniVertex3f>();
+			List<UniNormal3f> n = new ArrayList<UniNormal3f>();
+			List<UniTexCoord2f> t = new ArrayList<UniTexCoord2f>();
+			List<Integer> i = new ArrayList<Integer>();
+			while((line = reader.readLine()) != null) {
+				if (line.charAt(0) == '#') continue;
+				st = new StringTokenizer(line, " ");
+				
+				prefix = st.nextToken();
+				System.out.println(" PREFIX: " + prefix);
+				if (prefix.equals("mtllib")) {
+					continue;
+				}
+				if (prefix.equals("0")) {
+					continue;
+				}
+				if (prefix.equals("usemtl")) {
+					continue;
+				}
+				if (prefix.equals("s")) {
+					continue;
+				}
+				if (prefix.equals("v")) {
+					System.out.println("VERTEX");
+					float f1 = Float.valueOf(st.nextToken()).floatValue();
+					float f2 = Float.valueOf(st.nextToken()).floatValue();
+					float f3 = Float.valueOf(st.nextToken()).floatValue();
+					System.out.println(" F " + f1);
+					System.out.println(" F " + f2);
+					System.out.println(" F " + f3);
+					v.add(new UniVertex3f(f1, f2, f3));
+					continue;
+				}
+				if (prefix.equals("vn")) {
+					n.add(new UniNormal3f(
+							Float.valueOf(st.nextToken()).floatValue(),
+							Float.valueOf(st.nextToken()).floatValue(),
+							Float.valueOf(st.nextToken()).floatValue()));
+					continue;
+				}
+				if (prefix.equals("vt")) {
+					t.add(new UniTexCoord2f(
+							Float.valueOf(st.nextToken()).floatValue(),
+							Float.valueOf(st.nextToken()).floatValue()));
+					continue;
+				}
+				if (prefix.equals("f")) {
+					while(st.hasMoreElements()) {
+						i.add(Integer.valueOf(st.nextToken()));
+					}
+					continue;
+				}
+			}
+			UniVertex3f[] vertices = null;
+			if (v.size() != 0) {
+				vertices = new UniVertex3f[v.size()];
+				vertices = v.toArray(vertices);
+			}
+			UniNormal3f[] normals = null;
+			if (n.size() != 0) {
+				normals = new UniNormal3f[n.size()];
+				normals = n.toArray(normals);
+			}
+			UniColor3f[] colors = null;
+			UniTexCoord2f[] texCoords = null;
+			if (t.size() != 0) {
+				texCoords = new UniTexCoord2f[t.size()];
+				texCoords = t.toArray(texCoords);
+			}
+			int[] indices = null;
+			if (i.size() != 0) {
+				indices = new int[i.size()];
+				for (int j = 0; j < i.size(); j++) {
+					indices[j] = i.get(j).intValue();
+				}
+			}
+			try {
+				UniVBORenderer rend = new UniVBORenderer(
+						vertices, normals, colors, texCoords, indices);
+				rend.create();
+				UniMesh mesh = new UniMesh(rend);
+				UniMesh[] meshes = new UniMesh[1];
+				meshes[0] = mesh;
+				return new UniModel(meshes);
+			} catch (UniGLVersionException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
+		public static void print(String filepath) throws IOException, UniModelLoaderException {
+			if (!filepath.contains(".obj")) {
+				throw new UniModelLoaderException(String.format("The given File %s is not from type .obj", filepath));
+			}
+			File file = new File(filepath);
+			if (!file.exists()) {
+				throw new UniModelLoaderException(String.format("The given File %s does not exist!", filepath));
+			}
+			print(file);
+		}
+		
+		public static void print(File file) throws IOException, UniModelLoaderException {
+			FileReader reader = new FileReader(file);
+			BufferedReader read = new BufferedReader(reader);
+			print(read);
+		}
+		
+		public static void print(BufferedReader reader) throws IOException, UniModelLoaderException {
+			String line;
+			while((line = reader.readLine()) != null) {
+				System.out.println(line);
+			}
+		}
 	}
 	
 	public static void printHEXData(String filename) throws IOException {

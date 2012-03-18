@@ -13,9 +13,10 @@ public class MeshTest {
 			// If you have it and Uncomment it, you will get an error,
 			// try it out :P
 //			UniModelLoader.UEM.writeUniCube("res/cube_model.uem");
-			UniModelLoader.printHEXData("res/box.3ds");
-			UniModelLoader.UEM.print("res/cube_model.uem");
-			UniModelLoader.L3DS.print("res/box.3ds");
+//			UniModelLoader.printHEXData("res/box.3ds");
+//			UniModelLoader.UEM.print("res/cube_model.uem");
+//			UniModelLoader.L3DS.print("res/box.3ds");
+			UniModelLoader.OBJ.print("res/box.obj");
 		} catch (IOException e) {
 			System.err.println("IOException:");
 			e.printStackTrace();

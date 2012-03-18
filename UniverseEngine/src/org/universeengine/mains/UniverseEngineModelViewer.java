@@ -82,7 +82,10 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		setupOriginLines();
 		
 		try {
-			model = UniModelLoader.UEM.load(modelpath);
+			if (modelpath.contains(".uem"))
+				model = UniModelLoader.UEM.load(modelpath);
+			if (modelpath.contains(".obj"))
+				model = UniModelLoader.OBJ.load(modelpath);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (UniModelLoaderException e) {
@@ -173,7 +176,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public static void main(String[] args) {
-		new UniverseEngineModelViewer("cube_model.uem");
+		new UniverseEngineModelViewer("res/box.obj");
 	}
 
 }
