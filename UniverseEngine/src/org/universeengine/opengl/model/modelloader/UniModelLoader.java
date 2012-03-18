@@ -16,7 +16,7 @@ import java.util.StringTokenizer;
 import org.universeengine.exceptions.UniGLVersionException;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.UniModel;
-import org.universeengine.opengl.model.renderer.UniVBORenderer;
+import org.universeengine.opengl.model.renderer.UniInterleavedVBORenderer;
 import org.universeengine.opengl.vertex.UniColor3f;
 import org.universeengine.opengl.vertex.UniNormal3f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
@@ -211,7 +211,7 @@ public final class UniModelLoader {
 						ind = null;
 					}
 					try {
-						UniVBORenderer rend = new UniVBORenderer(v, n, c, t, ind);
+						UniInterleavedVBORenderer rend = new UniInterleavedVBORenderer(v, n, c, t, ind);
 						rend.create();
 						meshes[m] = new UniMesh(rend);
 					} catch (UniGLVersionException e) {
@@ -753,7 +753,7 @@ public final class UniModelLoader {
 				}
 			}
 			try {
-				UniVBORenderer rend = new UniVBORenderer(
+				UniInterleavedVBORenderer rend = new UniInterleavedVBORenderer(
 						vertices, normals, colors, texCoords, indices);
 				rend.create();
 				UniMesh mesh = new UniMesh(rend);

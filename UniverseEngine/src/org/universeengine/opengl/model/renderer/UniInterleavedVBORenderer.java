@@ -11,18 +11,18 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.GLContext;
 import org.universeengine.exceptions.UniGLVersionException;
-import org.universeengine.opengl.vertex.UniVertex;
+import org.universeengine.opengl.vertex.UniElement;
 import org.universeengine.util.UniPrint;
 
-public class UniVBORenderer extends UniMeshRenderer {
+public class UniInterleavedVBORenderer extends UniMeshRenderer {
 
 	private int vboID;
 	private int indID;
 
-	private UniVertex[] vertices;
-	private UniVertex[] normals;
-	private UniVertex[] colors;
-	private UniVertex[] texCoords;
+	private UniElement[] vertices;
+	private UniElement[] normals;
+	private UniElement[] colors;
+	private UniElement[] texCoords;
 	private int[] indices;
 	
 	private int offV;
@@ -38,8 +38,8 @@ public class UniVBORenderer extends UniMeshRenderer {
 	private int size;
 	private int stride;
 
-	public UniVBORenderer(UniVertex[] vertices, UniVertex[] normals,
-			UniVertex[] colors, UniVertex[] texCoords, int[] indices)
+	public UniInterleavedVBORenderer(UniElement[] vertices, UniElement[] normals,
+			UniElement[] colors, UniElement[] texCoords, int[] indices)
 			throws UniGLVersionException {
 		if (!GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
 			throw new UniGLVersionException(

@@ -2,7 +2,7 @@ package org.universeengine.opengl.model;
 
 import org.universeengine.opengl.vertex.UniNormal3f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
-import org.universeengine.opengl.vertex.UniVertex;
+import org.universeengine.opengl.vertex.UniElement;
 import org.universeengine.opengl.vertex.UniVertex2f;
 import org.universeengine.opengl.vertex.UniVertex3f;
 import org.universeengine.util.UniPrint;
@@ -14,7 +14,7 @@ public final class UniMeshUtil {
 	public static final int NORMAL_ARRAY = 2;
 	public static final int TEXCOORD_ARRAY = 3;
 
-	public static float[] createVertexArray(UniVertex[] vertices, int type) {
+	public static float[] createVertexArray(UniElement[] vertices, int type) {
 		if (type < 0 || type > 3) {
 		}
 		int bandwidth = vertices[0].getBandwidth();

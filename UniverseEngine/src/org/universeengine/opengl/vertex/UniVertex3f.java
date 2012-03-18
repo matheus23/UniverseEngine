@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL11.*;
 import org.universeengine.util.UniPrint;
 import org.universeengine.util.UniPrintable;
 
-public class UniVertex3f implements UniVertex, UniPrintable {
+public class UniVertex3f implements UniElement, UniPrintable {
 	
 	public static final int BANDWIDTH = 3;
 	public static final int TYPE = FLOAT;

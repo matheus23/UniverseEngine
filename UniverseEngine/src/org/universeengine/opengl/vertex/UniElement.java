@@ -1,6 +1,6 @@
 package org.universeengine.opengl.vertex;
 
-public interface UniVertex {
+public interface UniElement {
 	
 	public static final int FLOAT = 0;
 	public static final int INT = 1;

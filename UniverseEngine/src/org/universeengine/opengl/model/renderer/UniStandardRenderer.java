@@ -3,16 +3,16 @@ package org.universeengine.opengl.model.renderer;
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glEnd;
 
-import org.universeengine.opengl.vertex.UniVertex;
+import org.universeengine.opengl.vertex.UniElement;
 
 public class UniStandardRenderer extends UniMeshRenderer {
 
-	private UniVertex[] vertices;
-	private UniVertex[] normals;
-	private UniVertex[] colors;
-	private UniVertex[] texCoords;
+	private UniElement[] vertices;
+	private UniElement[] normals;
+	private UniElement[] colors;
+	private UniElement[] texCoords;
 
-	public UniStandardRenderer(UniVertex[] vertices, UniVertex[] normals, UniVertex[] colors, UniVertex[] texCoords) {
+	public UniStandardRenderer(UniElement[] vertices, UniElement[] normals, UniElement[] colors, UniElement[] texCoords) {
 		this.vertices = vertices;
 		this.normals = normals;
 		this.colors = colors;

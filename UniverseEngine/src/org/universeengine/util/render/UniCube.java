@@ -2,7 +2,7 @@ package org.universeengine.util.render;
 
 import org.universeengine.exceptions.UniGLVersionException;
 import org.universeengine.opengl.model.UniMesh;
-import org.universeengine.opengl.model.renderer.UniVBORenderer;
+import org.universeengine.opengl.model.renderer.UniInterleavedVBORenderer;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.vertex.UniColor3f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
@@ -87,7 +87,7 @@ public class UniCube {
 		i[23] = 2;
 		
 		try {
-			UniVBORenderer rend = new UniVBORenderer(v, null, c, t, i);
+			UniInterleavedVBORenderer rend = new UniInterleavedVBORenderer(v, null, c, t, i);
 			rend.create();
 			mesh = new UniMesh(rend);
 		} catch (UniGLVersionException e) {

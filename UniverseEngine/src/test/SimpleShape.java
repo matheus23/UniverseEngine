@@ -4,7 +4,7 @@ import org.lwjgl.opengl.GL11;
 import org.universeengine.exceptions.UniGLVersionException;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.renderer.UniMeshRenderer;
-import org.universeengine.opengl.model.renderer.UniVBORenderer;
+import org.universeengine.opengl.model.renderer.UniInterleavedVBORenderer;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.vertex.UniColor4f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
@@ -43,8 +43,8 @@ public class SimpleShape {
 		texCoords[3] = new UniTexCoord2f(0f, 0f);
 		
 		try {
-			rend1 = new UniVBORenderer(vertices, null, colors, null, null);
-			rend2 = new UniVBORenderer(vertices, null, null, texCoords, null);
+			rend1 = new UniInterleavedVBORenderer(vertices, null, colors, null, null);
+			rend2 = new UniInterleavedVBORenderer(vertices, null, null, texCoords, null);
 		} catch (UniGLVersionException e) {
 			e.printStackTrace();
 		}
