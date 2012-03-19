@@ -4,7 +4,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.universeengine.util.UniPrint;
 
 public abstract class UniMeshRenderer {
 	
@@ -24,7 +23,6 @@ public abstract class UniMeshRenderer {
 	
 	public void finalize() {
 		delete();
-		UniPrint.printf("delete() invoked from finalize()\n");
 	}
 
 }

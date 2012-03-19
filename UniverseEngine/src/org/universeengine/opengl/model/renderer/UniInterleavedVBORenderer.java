@@ -37,6 +37,8 @@ public class UniInterleavedVBORenderer extends UniMeshRenderer {
 
 	private int size;
 	private int stride;
+	
+	private boolean print = true;
 
 	public UniInterleavedVBORenderer(UniElement[] vertices, UniElement[] normals,
 			UniElement[] colors, UniElement[] texCoords, int[] indices)
@@ -51,8 +53,14 @@ public class UniInterleavedVBORenderer extends UniMeshRenderer {
 		this.texCoords = texCoords;
 		this.indices = indices;
 	}
+	
+	public void setPrint(boolean print) {
+		this.print = print;
+	}
 
 	public void create() {
+		boolean save = UniPrint.enabled;
+		UniPrint.enabled = print;
 		sizeV = vertices != null ? vertices[0].getBandwidth() : 0;
 		sizeN = normals != null ? normals[0].getBandwidth() : 0;
 		sizeC = colors != null ? colors[0].getBandwidth() : 0;
@@ -151,6 +159,7 @@ public class UniInterleavedVBORenderer extends UniMeshRenderer {
 		glDisableClientState(GL_NORMAL_ARRAY);
 		glDisableClientState(GL_COLOR_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		UniPrint.enabled = save;
 	}
 
 	public void render(int mode) {

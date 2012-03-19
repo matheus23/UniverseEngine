@@ -39,6 +39,7 @@ import org.universeengine.opengl.model.modelloader.UniModelLoaderException;
 import org.universeengine.opengl.model.renderer.UniStandardRenderer;
 import org.universeengine.opengl.vertex.UniColor3f;
 import org.universeengine.opengl.vertex.UniVertex3f;
+import org.universeengine.util.UniPrint;
 import org.universeengine.util.cam.UniCamera;
 import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
@@ -64,6 +65,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public void start() {
+		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
 		
@@ -176,7 +178,8 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public static void main(String[] args) {
-		new UniverseEngineModelViewer("res/box.obj");
+		UniPrint.enabled = false;
+		new UniverseEngineModelViewer("res/mountains.obj");
 	}
 
 }

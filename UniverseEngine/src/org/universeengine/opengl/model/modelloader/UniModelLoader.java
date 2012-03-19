@@ -679,13 +679,17 @@ public final class UniModelLoader {
 			List<UniVertex3f> v = new ArrayList<UniVertex3f>();
 			List<UniNormal3f> n = new ArrayList<UniNormal3f>();
 			List<UniTexCoord2f> t = new ArrayList<UniTexCoord2f>();
-			List<Integer> i = new ArrayList<Integer>();
+			List<IndOBJ> i = new ArrayList<IndOBJ>();
+			int vnumb = 0;
+			int nnumb = 0;
+			int tnumb = 0;
+			int inumb = 0;
 			while((line = reader.readLine()) != null) {
+				if (line.isEmpty()) continue;
 				if (line.charAt(0) == '#') continue;
 				st = new StringTokenizer(line, " ");
 				
 				prefix = st.nextToken();
-				System.out.println(" PREFIX: " + prefix);
 				if (prefix.equals("mtllib")) {
 					continue;
 				}
@@ -699,17 +703,14 @@ public final class UniModelLoader {
 					continue;
 				}
 				if (prefix.equals("v")) {
-					System.out.println("VERTEX");
-					float f1 = Float.valueOf(st.nextToken()).floatValue();
-					float f2 = Float.valueOf(st.nextToken()).floatValue();
-					float f3 = Float.valueOf(st.nextToken()).floatValue();
-					System.out.println(" F " + f1);
-					System.out.println(" F " + f2);
-					System.out.println(" F " + f3);
-					v.add(new UniVertex3f(f1, f2, f3));
+					vnumb++;
+					v.add(new UniVertex3f(Float.valueOf(st.nextToken()).floatValue(), 
+							Float.valueOf(st.nextToken()).floatValue(), 
+							Float.valueOf(st.nextToken()).floatValue()));
 					continue;
 				}
 				if (prefix.equals("vn")) {
+					nnumb++;
 					n.add(new UniNormal3f(
 							Float.valueOf(st.nextToken()).floatValue(),
 							Float.valueOf(st.nextToken()).floatValue(),
@@ -717,44 +718,41 @@ public final class UniModelLoader {
 					continue;
 				}
 				if (prefix.equals("vt")) {
+					tnumb++;
 					t.add(new UniTexCoord2f(
 							Float.valueOf(st.nextToken()).floatValue(),
 							Float.valueOf(st.nextToken()).floatValue()));
 					continue;
 				}
 				if (prefix.equals("f")) {
-					while(st.hasMoreElements()) {
-						i.add(Integer.valueOf(st.nextToken()));
+					while (st.hasMoreElements()) {
+						i.add(new IndOBJ(st.nextToken()));
+						inumb++;
 					}
 					continue;
 				}
 			}
-			UniVertex3f[] vertices = null;
-			if (v.size() != 0) {
-				vertices = new UniVertex3f[v.size()];
-				vertices = v.toArray(vertices);
-			}
-			UniNormal3f[] normals = null;
-			if (n.size() != 0) {
-				normals = new UniNormal3f[n.size()];
-				normals = n.toArray(normals);
-			}
-			UniColor3f[] colors = null;
+			UniVertex3f[] vertices = new UniVertex3f[i.size()];
 			UniTexCoord2f[] texCoords = null;
-			if (t.size() != 0) {
-				texCoords = new UniTexCoord2f[t.size()];
-				texCoords = t.toArray(texCoords);
+			if (tnumb > 0) {
+				texCoords = new UniTexCoord2f[i.size()];
 			}
-			int[] indices = null;
-			if (i.size() != 0) {
-				indices = new int[i.size()];
-				for (int j = 0; j < i.size(); j++) {
-					indices[j] = i.get(j).intValue();
+			int pos;
+			for (pos = 0; pos < v.size(); pos++) {
+				vertices[pos] = v.get(i.get(pos).fv-1);
+				if (tnumb > 0) {
+					texCoords[pos] = t.get(i.get(pos).ft-1);
 				}
 			}
+			System.out.printf("Number of Vertices: %d\n" +
+					"Number of Normals: %d\n" +
+					"Number of Texture Coords: %d\n" +
+					"Number of Indices: %d\n",
+					vnumb, nnumb, tnumb, inumb);
 			try {
 				UniInterleavedVBORenderer rend = new UniInterleavedVBORenderer(
-						vertices, normals, colors, texCoords, indices);
+						vertices, null, null, null, null);
+				rend.setPrint(false);
 				rend.create();
 				UniMesh mesh = new UniMesh(rend);
 				UniMesh[] meshes = new UniMesh[1];
@@ -788,6 +786,54 @@ public final class UniModelLoader {
 			while((line = reader.readLine()) != null) {
 				System.out.println(line);
 			}
+		}
+		
+		private static class IndOBJ {
+			
+			public static final int NAN = 0xFFFFFFFF;
+			
+			public int fv;
+			public int ft;
+			public int fn;
+			
+			public IndOBJ(String str) {
+				char[][] chars = new char[3][str.length()];
+				int j = 0;
+				int pos = 0;
+				int[] charlengths = new int[3];
+				for (int i = 0; i < str.length(); i++) {
+					char c = str.charAt(i);
+					if (c == '/') {
+						charlengths[j] = pos;
+						j++;
+						pos = 0;
+					} else {
+						chars[j][pos] = c;
+						pos++;
+					}
+				}
+				charlengths[j] = pos;
+				char[][] copy = new char[3][];
+				copy[0] = new char[charlengths[0]];
+				copy[1] = new char[charlengths[1]];
+				copy[2] = new char[charlengths[2]];
+				for (int x = 0; x < copy.length; x++) {
+					for (int y = 0; y < copy[x].length; y++) {
+						copy[x][y] = chars[x][y];
+					}
+				}
+				String[] strs = new String[3];
+				strs[0] = new String(copy[0]);
+				strs[1] = new String(copy[1]);
+				strs[2] = new String(copy[2]);
+				fv = Integer.valueOf(strs[0].length() == 0 ? "0" : strs[0]).intValue();
+				ft = Integer.valueOf(strs[1].length() == 0 ? "0" : strs[1]).intValue();
+				fn = Integer.valueOf(strs[2].length() == 0 ? "0" : strs[2]).intValue();
+				fv = fv == 0 ? NAN : fv;
+				ft = ft == 0 ? NAN : ft;
+				fn = fn == 0 ? NAN : fn;
+			}
+			
 		}
 	}
 	
