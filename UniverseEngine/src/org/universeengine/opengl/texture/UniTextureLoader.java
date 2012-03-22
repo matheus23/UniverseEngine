@@ -14,6 +14,7 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.BufferedImageUtil;
 import org.newdawn.slick.util.ResourceLoader;
+import org.universeengine.util.UniPrint;
 
 public final class UniTextureLoader {
 
@@ -32,7 +33,18 @@ public final class UniTextureLoader {
 		while(st.hasMoreElements()) {
 			format = st.nextToken();
 		}
-		format.toUpperCase();
+		String[] strs = ImageIO.getReaderFormatNames();
+		boolean okey = false;
+		for (int i = 0; i < strs.length; i++) {
+			if (format.equalsIgnoreCase(strs[i])) {
+				okey = true;
+				break;
+			}
+		}
+		if (!okey) {
+			UniPrint.printerrf("The File format .%s for loading Texture is not supported!\n", 
+					format);
+		}
 		try {
 			Texture slickTex = TextureLoader.getTexture(format,
 					ResourceLoader.getResourceAsStream(filepath), true);
