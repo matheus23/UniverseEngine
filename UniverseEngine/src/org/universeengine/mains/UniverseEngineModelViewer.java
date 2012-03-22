@@ -1,29 +1,6 @@
 package org.universeengine.mains;
 
-import static org.lwjgl.opengl.GL11.GL_BLEND;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_LINE_SMOOTH_HINT;
-import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_NICEST;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
-import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.glBlendFunc;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glColor4f;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glHint;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glPointSize;
-import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
 import java.io.IOException;
@@ -59,10 +36,12 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private UniModel model;
 	private UniDisplayList linesDL; 
 	private String modelpath;
+	private String texturepath;
 	private UniTexture tex;
 
-	public UniverseEngineModelViewer(String modelpath) {
+	public UniverseEngineModelViewer(String modelpath, String texturepath) {
 		this.modelpath = modelpath;
+		this.texturepath = texturepath;
 		display = new UniAWTDisplay(800, 600, "UniverseEngine 3D Test");
 		loop = new UniLoop(this, display);
 		loop.start();
@@ -97,8 +76,9 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		} catch (UniModelLoaderException e) {
 			e.printStackTrace();
 		}
-		glPointSize(3f);
-		tex = UniTextureLoader.loadTexture("res/heightmap.png");
+		if (texturepath != null && !texturepath.isEmpty()) {
+			tex = UniTextureLoader.loadTexture(texturepath);
+		}
 	}
 
 	public void tick() {
@@ -115,9 +95,9 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		glColor4f(1f, 1f, 1f, 1f);
 		cam.apply();
 		
-		tex.bind();
+		if (tex != null) tex.bind();
 		model.render(GL_QUADS);
-		tex.unbind();
+		if (tex != null) tex.unbind();
 		
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
@@ -187,7 +167,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 
 	public static void main(String[] args) {
 		UniPrint.enabled = false;
-		new UniverseEngineModelViewer("res/mountains.obj");
+		new UniverseEngineModelViewer("res/mountains.obj", " ");
 	}
 
 }

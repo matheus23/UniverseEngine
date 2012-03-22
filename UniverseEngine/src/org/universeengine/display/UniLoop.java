@@ -46,7 +46,7 @@ public class UniLoop implements UniPrintable {
 	
 	private void runLoop() {
 		delayHandler = new DelayHandler();
-		delayHandler.setFpsCalcDelay(10);
+		delayHandler.setFpsCalcDelay(60);
 		int oldw = display.getSize().width;
 		int oldh = display.getSize().height;
 		enterPoint.start();
