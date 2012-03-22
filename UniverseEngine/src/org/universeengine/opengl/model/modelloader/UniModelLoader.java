@@ -704,7 +704,8 @@ public final class UniModelLoader {
 				}
 				if (prefix.equals("v")) {
 					vnumb++;
-					v.add(new UniVertex3f(Float.valueOf(st.nextToken()).floatValue(), 
+					v.add(new UniVertex3f(
+							Float.valueOf(st.nextToken()).floatValue(), 
 							Float.valueOf(st.nextToken()).floatValue(), 
 							Float.valueOf(st.nextToken()).floatValue()));
 					continue;
@@ -738,10 +739,10 @@ public final class UniModelLoader {
 				texCoords = new UniTexCoord2f[i.size()];
 			}
 			int pos;
-			for (pos = 0; pos < v.size(); pos++) {
-				vertices[pos] = v.get(i.get(pos).fv-1);
+			for (pos = 0; pos < i.size(); pos++) {
+				vertices[pos] = v.get((i.get(pos).fv)-1);
 				if (tnumb > 0) {
-					texCoords[pos] = t.get(i.get(pos).ft-1);
+					texCoords[pos] = t.get((i.get(pos).ft)-1);
 				}
 			}
 			System.out.printf("Number of Vertices: %d\n" +
@@ -751,7 +752,7 @@ public final class UniModelLoader {
 					vnumb, nnumb, tnumb, inumb);
 			try {
 				UniInterleavedVBORenderer rend = new UniInterleavedVBORenderer(
-						vertices, null, null, null, null);
+						vertices, null, null, texCoords, null);
 				rend.setPrint(false);
 				rend.create();
 				UniMesh mesh = new UniMesh(rend);

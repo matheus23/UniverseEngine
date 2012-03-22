@@ -22,6 +22,7 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glPointSize;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
@@ -37,6 +38,8 @@ import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
 import org.universeengine.opengl.model.modelloader.UniModelLoaderException;
 import org.universeengine.opengl.model.renderer.UniStandardRenderer;
+import org.universeengine.opengl.texture.UniTexture;
+import org.universeengine.opengl.texture.UniTextureLoader;
 import org.universeengine.opengl.vertex.UniColor3f;
 import org.universeengine.opengl.vertex.UniVertex3f;
 import org.universeengine.util.UniPrint;
@@ -56,6 +59,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private UniModel model;
 	private UniDisplayList linesDL; 
 	private String modelpath;
+	private UniTexture tex;
 
 	public UniverseEngineModelViewer(String modelpath) {
 		this.modelpath = modelpath;
@@ -93,6 +97,8 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		} catch (UniModelLoaderException e) {
 			e.printStackTrace();
 		}
+		glPointSize(3f);
+		tex = UniTextureLoader.loadTexture("res/heightmap.png");
 	}
 
 	public void tick() {
@@ -109,7 +115,9 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		glColor4f(1f, 1f, 1f, 1f);
 		cam.apply();
 		
+		tex.bind();
 		model.render(GL_QUADS);
+		tex.unbind();
 		
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();

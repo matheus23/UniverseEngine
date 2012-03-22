@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.Sys;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.util.UniPrint;
 import org.universeengine.util.UniPrintable;
@@ -45,7 +46,7 @@ public class UniLoop implements UniPrintable {
 	
 	private void runLoop() {
 		delayHandler = new DelayHandler();
-		delayHandler.setFpsCalcDelay(60);
+		delayHandler.setFpsCalcDelay(10);
 		int oldw = display.getSize().width;
 		int oldh = display.getSize().height;
 		enterPoint.start();
@@ -177,51 +178,45 @@ public class UniLoop implements UniPrintable {
 	private class DelayHandler implements UniPrintable {
 
 		/* Delay-Handling: */
-		private HighResTime sleep;
-		private HighResTime delta;
-		private HighResTime timeOld;
-		private HighResTime time;
-		private HighResTime fpsTime;
-		private HighResTime realSleepBegin;
-		private HighResTime realSleepEnd;
-		private HighResTime realSleep;
+		private long timeOld;
+		private long time;
+		private long fpsTime;
+		private long yieldTime;
+		private long overSleep;
+		private long loopTime;
+		private long variableYieldTime;
 
 		/* FPS-Handling: */
 		public float fps;
 		private long frames;
-		private HighResTime fpsTimeOld;
+		private long fpsTimeOld;
 		private long up;
 
 		public DelayHandler() {
-			sleep = new HighResTime(0, 0);
-			delta = new HighResTime(0, 0);
-			timeOld = new HighResTime(0, 0);
-			time = new HighResTime(0, 0);
-			fpsTime = new HighResTime(0, 0);
-			realSleepBegin = new HighResTime(0, 0);
-			realSleepEnd = new HighResTime(0, 0);
-			realSleep = new HighResTime(0, 0);
+			timeOld = 0;
+			time = 0;
+			fpsTime = 0;
+			yieldTime = 0;
+			overSleep = 0;
+			loopTime = 0;
 			fps = 0f;
 			frames = 0;
-			fpsTimeOld = new HighResTime(0, 0);
+			fpsTimeOld = 0;
 			up = 60;
 			setFpsTime(60);
 			Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		}
 
-		private HighResTime getDelta() {
+		private void calcFps() {
 			frames++;
-			time.set();
-			delta.setSubtract(time, timeOld);
+			time = getNano();
 
 			if (frames >= up) {
-				fps = ((up * 1000f) / (time.time - fpsTimeOld.time));
+				fps = ((up * 1000000000f) / (time - fpsTimeOld));
 				frames = 0;
 				UniPrint.printf("%s >> fps: %G\n", getClassName(), fps);
-				fpsTimeOld.set(time.time, time.timeNano);
+				fpsTimeOld = time;
 			}
-
-			return delta;
 		}
 
 		/**
@@ -232,30 +227,45 @@ public class UniLoop implements UniPrintable {
 		 * @return whether you should exit the loop or not.
 		 */
 		public boolean update(boolean dodelay) {
-			sleep.setSubtract(fpsTime, getDelta());
-			sleep.normalizeNano();
-				if (dodelay) {
+			calcFps();
+			if (dodelay) {
+				yieldTime = Math.min(fpsTime, variableYieldTime + fpsTime % (1000*1000));
+				overSleep = 0; // time the sync goes over by
+				
 				try {
-					realSleepBegin.set();
-					while (sleep.time > 0) {
-						Thread.sleep(sleep.time, (int) sleep.timeNano);
-						realSleepEnd.set();
-						realSleep.setSubtract(realSleepEnd, realSleepBegin);
-						sleep.setSubtract(sleep, realSleep);
+					while (true) {
+						loopTime = getNano() - timeOld;
+						
+						if (loopTime < fpsTime- yieldTime) {
+							Thread.sleep(1);
+						}
+						else if (loopTime < fpsTime) {
+							Thread.yield();
+						}
+						else {
+							overSleep = loopTime - fpsTime;
+							break;
+						}
 					}
-					timeOld.set();
-					return false;
 				} catch (InterruptedException e) {
 					UniPrint.printerrf(this, "Error while sleeping!\n");
-					e.printStackTrace();
 					return true;
+				}
+				
+				timeOld = getNano() - Math.min(overSleep, fpsTime);
+				
+				if (overSleep > variableYieldTime) {
+					variableYieldTime = Math.min(variableYieldTime + 200*1000, fpsTime);
+				}
+				else if (overSleep < variableYieldTime - 200*1000) {
+					variableYieldTime = Math.max(variableYieldTime - 2*1000, 0);
 				}
 			}
 			return false;
 		}
 		
 		public void setFpsTime(long fps) {
-			fpsTime.set(1000L/fps, (1000000000L/fps)%1000000L);
+			fpsTime = (1000000000L / fps);
 		}
 		
 		/**
@@ -269,40 +279,16 @@ public class UniLoop implements UniPrintable {
 			up = frames;
 		}
 		
+		/**
+		 * Get System Nano Time
+		 * @return will return the current time in nano's
+		 */
+		private long getNano() {
+		    return (Sys.getTime() * 1000000000) / Sys.getTimerResolution();
+		}
+		
 		public String getClassName() {
 			return getClass().getSimpleName();
-		}
-
-		private class HighResTime {
-			
-			public long timeNano;
-			public long time;
-			
-			public HighResTime(long timeNano, long time) {
-				this.timeNano = timeNano;
-				this.time = time;
-			}
-			
-			public void set() {
-				timeNano = System.nanoTime();
-				time = System.currentTimeMillis();
-			}
-			
-			public void set(long t, long tn) {
-				time = t;
-				timeNano = tn;
-			}
-			
-			public void setSubtract(HighResTime t1, HighResTime t2) {
-				timeNano = t1.timeNano - t2.timeNano;
-				time = t1.time -t2.time;
-			}
-			
-			public void normalizeNano() {
-				timeNano = timeNano % 1000000L;
-				timeNano = timeNano < 0 ? timeNano+1000000L : timeNano;
-			}
-			
 		}
 	}
 
