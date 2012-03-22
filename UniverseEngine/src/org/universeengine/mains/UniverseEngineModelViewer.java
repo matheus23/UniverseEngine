@@ -167,7 +167,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 
 	public static void main(String[] args) {
 		UniPrint.enabled = false;
-		new UniverseEngineModelViewer("res/mountains.obj", " ");
+		new UniverseEngineModelViewer("res/mountains.obj", "res/heightmap.png");
 	}
 
 }
