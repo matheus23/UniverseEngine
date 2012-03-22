@@ -110,11 +110,8 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	public void resume() {
 	}
 
-	public void onResize(int oldWidth, int oldHeight) {
-		if ((oldWidth != loop.display.getSize().width)
-				|| (oldHeight != loop.display.getSize().height)) {
-			setUpViewport(loop.display.getSize().width, loop.display.getSize().height);
-		}
+	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight) {
+		setUpViewport(newWidth, newHeight);
 	}
 
 	public void end() {

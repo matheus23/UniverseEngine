@@ -135,10 +135,10 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 		triangle.render();
 	}
 	
-	public void onResize(int oldWidth, int oldHeight) {
+	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight) {
 		if ((oldWidth != loop.display.getSize().width)
 				|| (oldHeight != loop.display.getSize().height)) {
-			glViewport(0, 0, loop.display.getSize().width, loop.display.getSize().height);
+			glViewport(0, 0, newWidth, newHeight);
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glOrtho(0.0, loop.display.getSize().width, 0.0,

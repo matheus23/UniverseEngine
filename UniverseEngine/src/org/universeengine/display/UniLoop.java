@@ -170,7 +170,10 @@ public class UniLoop implements UniPrintable {
 	}
 	
 	private void onResize(int oldw, int oldh) {
-		enterPoint.onResize(oldw, oldh);
+		if ((oldw != display.getSize().width)
+				|| (oldh != display.getSize().height)) {
+			enterPoint.onResize(oldw, oldh, display.getSize().width, display.getSize().height);
+		}
 		oldw = display.getSize().width;
 		oldh = display.getSize().height;
 	}

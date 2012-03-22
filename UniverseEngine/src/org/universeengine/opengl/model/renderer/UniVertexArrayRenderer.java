@@ -34,7 +34,7 @@ public class UniVertexArrayRenderer extends UniMeshRenderer implements UniPrinta
 	}
 
 	public void create() {
-		//TODO: Same.
+		//TODO: Recreate this whole thing :/
 //		if (enableVert) {
 //			float[] vertArray = UniModelUtil.createModelArray(UniModelUtil.VERTEX_ARRAY, vertices);
 //			vert = arrayToBuffer(vertArray);

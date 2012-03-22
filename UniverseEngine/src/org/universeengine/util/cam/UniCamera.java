@@ -41,7 +41,6 @@ public class UniCamera {
 		mouseReset = true;
 		Mouse.setCursorPosition(loop.display.getSize().width / 2,
 				loop.display.getSize().height / 2);
-		Mouse.setGrabbed(true);
 	}
 
 	public void update() {

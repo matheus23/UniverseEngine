@@ -10,7 +10,7 @@ public interface UniverseEngineEnterPoint {
 	public void pause();
 	public void resume();
 	
-	public void onResize(int oldWidth, int oldHeight);
+	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight);
 	
 	public void end();
 
