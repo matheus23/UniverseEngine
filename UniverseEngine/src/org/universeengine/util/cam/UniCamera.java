@@ -9,7 +9,7 @@ import org.universeengine.display.UniLoop;
 
 public class UniCamera {
 
-	public static float smooth = 0.2f;
+	public static float smooth = 0.05f;
 
 	/** User-Variables */
 	private float x;

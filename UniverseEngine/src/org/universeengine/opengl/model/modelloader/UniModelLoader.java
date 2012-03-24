@@ -733,6 +733,8 @@ public final class UniModelLoader {
 					continue;
 				}
 			}
+			reader.close();
+			
 			UniVertex3f[] vertices = new UniVertex3f[i.size()];
 			UniNormal3f[] normals = null;
 			UniTexCoord2f[] texCoords = null;
@@ -760,7 +762,7 @@ public final class UniModelLoader {
 					vnumb, nnumb, tnumb, inumb);
 			try {
 				UniInterleavedVBORenderer rend = new UniInterleavedVBORenderer(
-						vertices, null, null, texCoords, null);
+						vertices, normals, null, texCoords, null);
 				rend.setPrint(false);
 				rend.create();
 				UniMesh mesh = new UniMesh(rend);
@@ -808,10 +810,10 @@ public final class UniModelLoader {
 			public IndOBJ(String str) {
 				String[] strs = str.split("/");
 				fv = (Integer.valueOf(strs[0])).intValue();
-				if (strs.length >= 2 && strs[1] != null) {
+				if (strs.length >= 2 && strs[1] != null && !strs[1].isEmpty()) {
 					ft = (Integer.valueOf(strs[1])).intValue();
 				}
-				if (strs.length >= 3) {
+				if (strs.length >= 3 && strs[2] != null && !strs[2].isEmpty()) {
 					fn = (Integer.valueOf(strs[2])).intValue();
 				}
 				fv = fv == 0 ? NAN : fv;

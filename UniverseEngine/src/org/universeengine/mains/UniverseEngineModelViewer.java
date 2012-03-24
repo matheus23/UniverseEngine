@@ -10,6 +10,8 @@ import org.lwjgl.input.Mouse;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
+import org.universeengine.opengl.lighting.UniStdLight;
+import org.universeengine.opengl.lighting.UniStdMaterial;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
@@ -38,10 +40,15 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private String modelpath;
 	private String texturepath;
 	private UniTexture tex;
+	private boolean wireFrame = false;
+	private int mode;
+	private UniStdLight light;
+	private UniStdMaterial mat;
 
-	public UniverseEngineModelViewer(String modelpath, String texturepath) {
+	public UniverseEngineModelViewer(String modelpath, String texturepath, int mode) {
 		this.modelpath = modelpath;
 		this.texturepath = texturepath;
+		this.mode = mode;
 		display = new UniAWTDisplay(800, 600, "UniverseEngine 3D Test");
 		loop = new UniLoop(this, display);
 		loop.start();
@@ -56,13 +63,31 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		cam = new UniCamera(loop);
 		
 		setUpViewport(loop.display.getSize().width, loop.display.getSize().height);
-		glClearColor(0f, 0f, 0f, 1f);
+		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		glEnable(GL_LIGHTING);
+		glShadeModel(GL_SMOOTH);
+		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+		
+		light = new UniStdLight(0, 4f, 4f, 4f, 1f);
+		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);
+		light.setDiffuse(0.8f, 0.8f, 0.8f, 1f);
+		light.setSpecular(1f, 1f, 1f, 1f);
+		
+		mat = new UniStdMaterial();
+		mat.setAmbient(1f, 0.7f, 0f, 1f);
+		mat.setDiffuse(1f, 0.5f, 0f, 1f);
+		mat.setSpecular(1f, 1f, 1f, 1f);
+		mat.setShininess(60f);
+		mat.bind();
 		
 		setupOriginLines();
 		
@@ -92,12 +117,24 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	public void render() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		glColor4f(1f, 1f, 1f, 1f);
+		if (!wireFrame) {
+			glColor4f(1f, 1f, 1f, 1f);
+		} else {
+			glColor4f(1f, 0.5f, 0f, 1f);
+		}
 		cam.apply();
 		
+		glEnable(GL_LIGHTING);
+		light.bind();
+		light.updatePosition();
+		
 		if (tex != null) tex.bind();
-		model.render(GL_TRIANGLES);
+		model.render(mode);
 		if (tex != null) tex.unbind();
+
+		glDisable(GL_LIGHTING);
+		
+		light.render();
 		
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
@@ -126,6 +163,9 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 			loop.setDelay(limitFPS);
 		} if (key == Keyboard.KEY_G){
 			Mouse.setGrabbed(!Mouse.isGrabbed());
+		} if (key == Keyboard.KEY_F) {
+			wireFrame = !wireFrame;
+			glPolygonMode(GL_FRONT_AND_BACK, wireFrame ? GL_LINE : GL_FILL);
 		}
 	}
 
@@ -164,7 +204,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 
 	public static void main(String[] args) {
 		UniPrint.enabled = false;
-		new UniverseEngineModelViewer("res/bunny.obj", null);
+		new UniverseEngineModelViewer("res/bunny.obj", null, GL_TRIANGLES);
 	}
 
 }
