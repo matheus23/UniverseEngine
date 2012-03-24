@@ -96,7 +96,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		cam.apply();
 		
 		if (tex != null) tex.bind();
-		model.render(GL_QUADS);
+		model.render(GL_TRIANGLES);
 		if (tex != null) tex.unbind();
 		
 		glDisable(GL_DEPTH_TEST);
@@ -164,7 +164,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 
 	public static void main(String[] args) {
 		UniPrint.enabled = false;
-		new UniverseEngineModelViewer("res/MountainsNormals.obj", "res/heightmap.png");
+		new UniverseEngineModelViewer("res/bunny.obj", null);
 	}
 
 }

@@ -808,8 +808,10 @@ public final class UniModelLoader {
 			public IndOBJ(String str) {
 				String[] strs = str.split("/");
 				fv = (Integer.valueOf(strs[0])).intValue();
-				ft = (Integer.valueOf(strs[1])).intValue();
-				if (strs.length > 1) {
+				if (strs.length >= 2 && strs[1] != null) {
+					ft = (Integer.valueOf(strs[1])).intValue();
+				}
+				if (strs.length >= 3) {
 					fn = (Integer.valueOf(strs[2])).intValue();
 				}
 				fv = fv == 0 ? NAN : fv;
