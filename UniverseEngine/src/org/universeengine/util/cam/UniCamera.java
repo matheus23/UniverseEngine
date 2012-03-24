@@ -25,9 +25,6 @@ public class UniCamera {
 	private float mov;
 	private float movside;
 
-	private UniLoop loop;
-	private boolean mouseReset;
-
 	public UniCamera(UniLoop l) {
 		speed = 0.1f;
 		rotSpeed = 1f;
@@ -37,21 +34,11 @@ public class UniCamera {
 		rotx = 0;
 		roty = 0;
 		rotz = 0;
-		loop = l;
-		mouseReset = true;
-		Mouse.setCursorPosition(loop.display.getSize().width / 2,
-				loop.display.getSize().height / 2);
 	}
 
 	public void update() {
-		if (!Mouse.isInsideWindow() && Mouse.isGrabbed()) {
-			Mouse.setCursorPosition(loop.display.getSize().width / 2,
-					loop.display.getSize().height / 2);
-			mouseReset = true;
-		}
 		calcMove();
 		calcRotation();
-		mouseReset = false;
 	}
 
 	private void calcMove() {
@@ -90,10 +77,8 @@ public class UniCamera {
 	}
 
 	private void calcRotation() {
-		if (!mouseReset) {
-			roty -= Mouse.getDX() * smooth;
-			rotx += Mouse.getDY() * smooth;
-		}
+		roty -= Mouse.getDX() * smooth;
+		rotx += Mouse.getDY() * smooth;
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
 			rotz += 1.0f;

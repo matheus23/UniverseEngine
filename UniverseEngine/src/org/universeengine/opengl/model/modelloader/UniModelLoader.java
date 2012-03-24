@@ -734,15 +734,23 @@ public final class UniModelLoader {
 				}
 			}
 			UniVertex3f[] vertices = new UniVertex3f[i.size()];
+			UniNormal3f[] normals = null;
 			UniTexCoord2f[] texCoords = null;
-			if (tnumb > 0) {
+			
+			if (nnumb > 0) {
+				normals = new UniNormal3f[i.size()];
+			} if (tnumb > 0) {
 				texCoords = new UniTexCoord2f[i.size()];
 			}
+			
 			int pos;
 			for (pos = 0; pos < i.size(); pos++) {
 				vertices[pos] = v.get((i.get(pos).fv)-1);
 				if (tnumb > 0) {
 					texCoords[pos] = t.get((i.get(pos).ft)-1);
+				}
+				if (nnumb > 0) {
+					normals[pos] = n.get((i.get(pos).fn)-1);
 				}
 			}
 			System.out.printf("Number of Vertices: %d\n" +
@@ -798,38 +806,12 @@ public final class UniModelLoader {
 			public int fn;
 			
 			public IndOBJ(String str) {
-				char[][] chars = new char[3][str.length()];
-				int j = 0;
-				int pos = 0;
-				int[] charlengths = new int[3];
-				for (int i = 0; i < str.length(); i++) {
-					char c = str.charAt(i);
-					if (c == '/') {
-						charlengths[j] = pos;
-						j++;
-						pos = 0;
-					} else {
-						chars[j][pos] = c;
-						pos++;
-					}
+				String[] strs = str.split("/");
+				fv = (Integer.valueOf(strs[0])).intValue();
+				ft = (Integer.valueOf(strs[1])).intValue();
+				if (strs.length > 1) {
+					fn = (Integer.valueOf(strs[2])).intValue();
 				}
-				charlengths[j] = pos;
-				char[][] copy = new char[3][];
-				copy[0] = new char[charlengths[0]];
-				copy[1] = new char[charlengths[1]];
-				copy[2] = new char[charlengths[2]];
-				for (int x = 0; x < copy.length; x++) {
-					for (int y = 0; y < copy[x].length; y++) {
-						copy[x][y] = chars[x][y];
-					}
-				}
-				String[] strs = new String[3];
-				strs[0] = new String(copy[0]);
-				strs[1] = new String(copy[1]);
-				strs[2] = new String(copy[2]);
-				fv = Integer.valueOf(strs[0].length() == 0 ? "0" : strs[0]).intValue();
-				ft = Integer.valueOf(strs[1].length() == 0 ? "0" : strs[1]).intValue();
-				fn = Integer.valueOf(strs[2].length() == 0 ? "0" : strs[2]).intValue();
 				fv = fv == 0 ? NAN : fv;
 				ft = ft == 0 ? NAN : ft;
 				fn = fn == 0 ? NAN : fn;
