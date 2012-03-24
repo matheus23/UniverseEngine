@@ -155,6 +155,9 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 	
 	public void keyPressed(int key) {
+		if (key == Keyboard.KEY_F2) {
+			loop.saveScreenshot("screenshots/screenshot.png");
+		}
 	}
 	
 	public void keyReleased(int key) {
