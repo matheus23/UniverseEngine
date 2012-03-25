@@ -24,6 +24,7 @@ public class UniLoop implements UniPrintable {
 	private boolean pausing = false;
 	private boolean forceExit = false;
 	private boolean delay = true;
+	private boolean saving = false;
 	private UniverseEngineEnterPoint enterPoint;
 	private DelayHandler delayHandler;
 	public UniDisplay display;
@@ -84,23 +85,26 @@ public class UniLoop implements UniPrintable {
 	 * @param filepath Filepath to save the Screenshot to.
 	 */
 	public void saveScreenshot(String filepath) {
-		glReadBuffer(GL_FRONT);
-		int width = display.getWidth();
-		int height = display.getHeight();
-		int bpp = display.getBPP();
-		UniPrint.printoutf(this, 
-			"Saving screenshot... Bytes per Pixel: %d\n", bpp);
-		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
-		int format = 0;
-		switch(bpp) {
-		case 3: format = GL_RGB; break;
-		case 4: format = GL_RGBA; break;
-		default: UniPrint.printerrf(this, "Unknown BPP while saving Screenshot: %d", bpp);
+		if (!saving) {
+			glReadBuffer(GL_FRONT);
+			int width = display.getWidth();
+			int height = display.getHeight();
+			int bpp = display.getBPP();
+			UniPrint.printoutf(this, 
+				"Saving screenshot... Bytes per Pixel: %d\n", bpp);
+			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+			int format = 0;
+			switch(bpp) {
+			case 3: format = GL_RGB; UniPrint.printoutf(this, "Reading Pixels with GL_RBG format!\n"); break;
+			case 4: format = GL_RGBA; UniPrint.printoutf(this, "Reading Pixels with GL_RBGA format!\n");  break;
+			default: UniPrint.printerrf(this, "Unknown BPP while saving Screenshot: %d\n", bpp);
+			}
+			glReadPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE, buffer);
+			saving = true;
+			SaveScreenshotThread sst = new SaveScreenshotThread(buffer, width,
+					height, bpp, filepath, "PNG", this);
+			sst.start();
 		}
-		glReadPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE, buffer);
-		SaveScreenshotThread sst = new SaveScreenshotThread(buffer, width,
-				height, bpp, filepath, "PNG");
-		sst.start();
 	}
 	
 	/**
@@ -305,15 +309,17 @@ public class UniLoop implements UniPrintable {
 		private int bpp;
 		private String location;
 		private String format;
+		private UniLoop loop;
 
 		public SaveScreenshotThread(ByteBuffer buffer, int width, int height,
-				int bpp, String location, String format) {
+				int bpp, String location, String format, UniLoop loop) {
 			this.buffer = buffer;
 			this.width = width;
 			this.height = height;
 			this.bpp = bpp;
 			this.location = location;
 			this.format = format;
+			this.loop = loop;
 		}
 
 		public void run() {
@@ -344,6 +350,7 @@ public class UniLoop implements UniPrintable {
 			UniPrint.printoutf(this,
 					"SaveScreenshotThread finished! Saved into \"%s\".\n",
 					location);
+			loop.saving = false;
 		}
 		
 		public String getClassName() {

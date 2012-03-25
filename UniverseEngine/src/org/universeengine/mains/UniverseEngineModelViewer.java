@@ -1,8 +1,44 @@
 package org.universeengine.mains;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_BACK;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_FILL;
+import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
+import static org.lwjgl.opengl.GL11.GL_LIGHTING;
+import static org.lwjgl.opengl.GL11.GL_LIGHT_MODEL_LOCAL_VIEWER;
+import static org.lwjgl.opengl.GL11.GL_LINE;
+import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.GL_LINE_SMOOTH_HINT;
+import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_NICEST;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
+import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_SMOOTH;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glColor4f;
+import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glHint;
+import static org.lwjgl.opengl.GL11.glLightModeli;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
+import static org.lwjgl.opengl.GL11.glShadeModel;
+import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
@@ -17,6 +53,7 @@ import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
 import org.universeengine.opengl.model.modelloader.UniModelLoaderException;
 import org.universeengine.opengl.model.renderer.UniStandardRenderer;
+import org.universeengine.opengl.shader.UniShaderProgram;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
 import org.universeengine.opengl.vertex.UniColor3f;
@@ -44,13 +81,34 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private int mode;
 	private UniStdLight light;
 	private UniStdMaterial mat;
+	private UniShaderProgram prog;
 
-	public UniverseEngineModelViewer(String modelpath, String texturepath, int mode) {
+	public UniverseEngineModelViewer(String modelpath, String texturepath, int mode, boolean start) {
 		this.modelpath = modelpath;
 		this.texturepath = texturepath;
 		this.mode = mode;
+		this.prog = null;
 		display = new UniAWTDisplay(800, 600, "UniverseEngine 3D Test");
 		loop = new UniLoop(this, display);
+		if (start) {
+			lateStart();
+		}
+	}
+	
+	public void setShaderProgram(UniShaderProgram prog) {
+		this.prog = prog;
+	}
+	
+	public void setMaterial(UniStdMaterial mat) {
+		this.mat = mat;
+		this.mat.bind();
+	}
+	
+	public void setLight(UniStdLight light) {
+		this.light = light;
+	}
+	
+	public void lateStart() {
 		loop.start();
 	}
 
@@ -70,24 +128,14 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		glEnable(GL_DEPTH_TEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-//		glEnable(GL_CULL_FACE);
-//		glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
-		glEnable(GL_LIGHTING);
-		glShadeModel(GL_SMOOTH);
-		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-		
-		light = new UniStdLight(0, 4f, 4f, 4f, 1f);
-		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);
-		light.setDiffuse(0.8f, 0.8f, 0.8f, 1f);
-		light.setSpecular(1f, 1f, 1f, 1f);
-		
-		mat = new UniStdMaterial();
-		mat.setAmbient(1f, 0.7f, 0f, 1f);
-		mat.setDiffuse(1f, 0.5f, 0f, 1f);
-		mat.setSpecular(1f, 1f, 1f, 1f);
-		mat.setShininess(60f);
-		mat.bind();
+		if (light != null) {
+			glEnable(GL_LIGHTING);
+			glShadeModel(GL_SMOOTH);
+			glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+		}
 		
 		setupOriginLines();
 		
@@ -124,17 +172,22 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		}
 		cam.apply();
 		
-		glEnable(GL_LIGHTING);
-		light.bind();
-		light.updatePosition();
+		if (light != null) {
+			glEnable(GL_LIGHTING);
+			light.bind();
+			light.updatePosition();
+		}
 		
 		if (tex != null) tex.bind();
+		if (prog != null) prog.use();
 		model.render(mode);
+		if (prog != null) prog.unuse();
 		if (tex != null) tex.unbind();
 
-		glDisable(GL_LIGHTING);
-		
-		light.render();
+		if (light != null) {
+			glDisable(GL_LIGHTING);
+			light.render();
+		}
 		
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
@@ -156,7 +209,19 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	
 	public void keyPressed(int key) {
 		if (key == Keyboard.KEY_F2) {
-			loop.saveScreenshot("screenshots/screenshot.png");
+			String screenname = "screenshots/screenshot";
+			String imageformat = ".png";
+			String screenpath = null;
+			int i = 0;
+			File f = new File(screenname + i + imageformat);
+			
+			do {
+				f = new File(screenname + i + imageformat);
+				screenpath = screenname + i + imageformat;
+				i++;
+			} while(f.exists());
+			
+			loop.saveScreenshot(screenpath);
 		}
 	}
 	
@@ -207,7 +272,24 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 
 	public static void main(String[] args) {
 		UniPrint.enabled = false;
-		new UniverseEngineModelViewer("res/OrangeCharacter.obj", null, GL_QUADS);
+		UniverseEngineModelViewer viewer = 
+				new UniverseEngineModelViewer("res/bunny.obj", null, GL_TRIANGLES, false);
+		
+		UniStdLight light = new UniStdLight(0, 4f, 4f, 4f, 1f);
+		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);
+		light.setDiffuse(0.8f, 0.8f, 0.8f, 1f);
+		light.setSpecular(1f, 1f, 1f, 1f);
+		
+		UniStdMaterial mat = new UniStdMaterial();
+		mat.setAmbient(1f, 0.7f, 0f, 1f);
+		mat.setDiffuse(1f, 0.5f, 0f, 1f);
+		mat.setSpecular(1f, 1f, 1f, 1f);
+		mat.setShininess(60f);
+		
+		viewer.setLight(light);
+		viewer.setMaterial(mat);
+		
+		viewer.lateStart();
 	}
 
 }
