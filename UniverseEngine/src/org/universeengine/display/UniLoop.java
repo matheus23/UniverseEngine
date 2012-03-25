@@ -1,10 +1,6 @@
 package org.universeengine.display;
 
-import static org.lwjgl.opengl.GL11.GL_FRONT;
-import static org.lwjgl.opengl.GL11.GL_RGB;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11.glReadBuffer;
-import static org.lwjgl.opengl.GL11.glReadPixels;
+import static org.lwjgl.opengl.GL11.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -95,7 +91,13 @@ public class UniLoop implements UniPrintable {
 		UniPrint.printoutf(this, 
 			"Saving screenshot... Bytes per Pixel: %d\n", bpp);
 		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
-		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+		int format = 0;
+		switch(bpp) {
+		case 3: format = GL_RGB; break;
+		case 4: format = GL_RGBA; break;
+		default: UniPrint.printerrf(this, "Unknown BPP while saving Screenshot: %d", bpp);
+		}
+		glReadPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE, buffer);
 		SaveScreenshotThread sst = new SaveScreenshotThread(buffer, width,
 				height, bpp, filepath, "PNG");
 		sst.start();

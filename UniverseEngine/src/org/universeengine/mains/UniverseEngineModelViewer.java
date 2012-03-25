@@ -70,8 +70,8 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		glEnable(GL_DEPTH_TEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+//		glEnable(GL_CULL_FACE);
+//		glCullFace(GL_BACK);
 
 		glEnable(GL_LIGHTING);
 		glShadeModel(GL_SMOOTH);
@@ -207,7 +207,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 
 	public static void main(String[] args) {
 		UniPrint.enabled = false;
-		new UniverseEngineModelViewer("res/bunny.obj", null, GL_TRIANGLES);
+		new UniverseEngineModelViewer("res/OrangeCharacter.obj", null, GL_QUADS);
 	}
 
 }

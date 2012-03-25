@@ -16,8 +16,9 @@ public class UniDisplayAdapter implements UniDisplay {
 		bpp = 32;
 		try {
 			Display.setDisplayMode(new DisplayMode(width, height));
-//			Display.setVSyncEnabled(true);
+			Display.setVSyncEnabled(true);
 			Display.setTitle(caption);
+			Display.setResizable(true);
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -25,7 +26,7 @@ public class UniDisplayAdapter implements UniDisplay {
 	}
 
 	public int getBPP() {
-		return bpp;
+		return bpp/8;
 	}
 
 	public void setVisible(boolean visible) {
