@@ -16,8 +16,8 @@ import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -40,6 +40,7 @@ import org.lwjgl.input.Mouse;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
+import org.universeengine.mains.shadertests.UniShaderTestUniform;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
@@ -55,7 +56,7 @@ import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
-public class CopyOfUniverseEngineModelNormalsViewer implements UniverseEngineEnterPoint, UniInputListener {
+public class UniverseEngineShaderTest implements UniverseEngineEnterPoint, UniInputListener {
 
 	private UniLoop loop;
 	private UniAWTDisplay display;
@@ -69,11 +70,13 @@ public class CopyOfUniverseEngineModelNormalsViewer implements UniverseEngineEnt
 	private boolean wireFrame = false;
 	private int mode;
 	private UniShaderProgram prog;
+	private UniShaderTestUniform uniformer;
 
-	public CopyOfUniverseEngineModelNormalsViewer(String modelpath, int mode) {
+	public UniverseEngineShaderTest(String modelpath, int mode, UniShaderTestUniform uniformer) {
 		this.modelpath = modelpath;
 		this.mode = mode;
 		this.prog = null;
+		this.uniformer = uniformer;
 		display = new UniAWTDisplay(800, 600, "UniverseEngine 3D Test");
 		loop = new UniLoop(this, display);
 		loop.start();
@@ -111,9 +114,10 @@ public class CopyOfUniverseEngineModelNormalsViewer implements UniverseEngineEnt
 			e.printStackTrace();
 		}
 		
-		UniShader vert = new UniShader("print_vertex_normals.vert", UniShader.VERTEX_SHADER);
-		UniShader norm = new UniShader("print_vertex_normals.frag", UniShader.FRAGMENT_SHADER);
-		prog = new UniShaderProgram(vert, norm);
+		UniShader vert = new UniShader("vertex_shader.vert", UniShader.VERTEX_SHADER);
+		UniShader frag = new UniShader("fragment_shader.frag", UniShader.FRAGMENT_SHADER);
+		prog = new UniShaderProgram(vert, frag);
+		uniformer.init(prog, vert, frag);
 	}
 
 	public void tick() {
@@ -135,6 +139,7 @@ public class CopyOfUniverseEngineModelNormalsViewer implements UniverseEngineEnt
 		cam.apply();
 		
 		prog.use();
+		uniformer.uniformAction();
 		model.render(mode);
 		prog.unuse();
 
@@ -221,7 +226,12 @@ public class CopyOfUniverseEngineModelNormalsViewer implements UniverseEngineEnt
 
 	public static void main(String[] args) {
 		UniPrint.enabled = true;
-		new CopyOfUniverseEngineModelNormalsViewer("res/OrangeCharacter.obj", GL_QUADS);
+		new UniverseEngineShaderTest("res/bunny.obj", GL_TRIANGLES, null);
+	}
+	
+	public static void start(String modelLoc, int mode, UniShaderTestUniform uniformer) {
+		UniPrint.enabled = true;
+		new UniverseEngineShaderTest(modelLoc, mode, uniformer);
 	}
 
 }

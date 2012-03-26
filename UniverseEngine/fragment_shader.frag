@@ -1,6 +1,9 @@
 #version 120
 
-uniform vec4 color;
+varying vec3 position;
+
+const float val = 10.0;
+
 void main(void) {
-	gl_FragColor = color;
+	gl_FragColor = vec4(position.x / val, position.y / val, position.z / val, 1.0); 
 }

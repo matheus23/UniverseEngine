@@ -8,8 +8,6 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
-import static org.lwjgl.opengl.GL11.GL_LIGHTING;
-import static org.lwjgl.opengl.GL11.GL_LIGHT_MODEL_LOCAL_VIEWER;
 import static org.lwjgl.opengl.GL11.GL_LINE;
 import static org.lwjgl.opengl.GL11.GL_LINES;
 import static org.lwjgl.opengl.GL11.GL_LINE_SMOOTH_HINT;
@@ -19,9 +17,7 @@ import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_SMOOTH;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -30,11 +26,9 @@ import static org.lwjgl.opengl.GL11.glCullFace;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glHint;
-import static org.lwjgl.opengl.GL11.glLightModeli;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
-import static org.lwjgl.opengl.GL11.glShadeModel;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
@@ -46,16 +40,13 @@ import org.lwjgl.input.Mouse;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
-import org.universeengine.opengl.lighting.UniStdLight;
-import org.universeengine.opengl.lighting.UniStdMaterial;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
 import org.universeengine.opengl.model.modelloader.UniModelLoaderException;
 import org.universeengine.opengl.model.renderer.UniStandardRenderer;
+import org.universeengine.opengl.shader.UniShader;
 import org.universeengine.opengl.shader.UniShaderProgram;
-import org.universeengine.opengl.texture.UniTexture;
-import org.universeengine.opengl.texture.UniTextureLoader;
 import org.universeengine.opengl.vertex.UniColor3f;
 import org.universeengine.opengl.vertex.UniVertex3f;
 import org.universeengine.util.UniPrint;
@@ -64,7 +55,7 @@ import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
-public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniInputListener {
+public class UniverseEngineModelNormalsViewer implements UniverseEngineEnterPoint, UniInputListener {
 
 	private UniLoop loop;
 	private UniAWTDisplay display;
@@ -75,43 +66,19 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private UniModel model;
 	private UniDisplayList linesDL; 
 	private String modelpath;
-	private String texturepath;
-	private UniTexture tex;
 	private boolean wireFrame = false;
 	private int mode;
-	private UniStdLight light;
-	private UniStdMaterial mat;
 	private UniShaderProgram prog;
 
-	public UniverseEngineModelViewer(String modelpath, String texturepath, int mode, boolean start) {
+	public UniverseEngineModelNormalsViewer(String modelpath, int mode) {
 		this.modelpath = modelpath;
-		this.texturepath = texturepath;
 		this.mode = mode;
 		this.prog = null;
 		display = new UniAWTDisplay(800, 600, "UniverseEngine 3D Test");
 		loop = new UniLoop(this, display);
-		if (start) {
-			lateStart();
-		}
-	}
-	
-	public void setShaderProgram(UniShaderProgram prog) {
-		this.prog = prog;
-	}
-	
-	public void setMaterial(UniStdMaterial mat) {
-		this.mat = mat;
-		this.mat.bind();
-	}
-	
-	public void setLight(UniStdLight light) {
-		this.light = light;
-	}
-	
-	public void lateStart() {
 		loop.start();
 	}
-
+	
 	public void start() {
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
@@ -131,12 +98,6 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		if (light != null) {
-			glEnable(GL_LIGHTING);
-			glShadeModel(GL_SMOOTH);
-			glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-		}
-		
 		setupOriginLines();
 		
 		try {
@@ -149,9 +110,10 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		} catch (UniModelLoaderException e) {
 			e.printStackTrace();
 		}
-		if (texturepath != null && !texturepath.isEmpty()) {
-			tex = UniTextureLoader.loadTexture(texturepath);
-		}
+		
+		UniShader vert = new UniShader("print_vertex_normals.vert", UniShader.VERTEX_SHADER);
+		UniShader norm = new UniShader("print_vertex_normals.frag", UniShader.FRAGMENT_SHADER);
+		prog = new UniShaderProgram(vert, norm);
 	}
 
 	public void tick() {
@@ -172,23 +134,10 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		}
 		cam.apply();
 		
-		if (light != null) {
-			glEnable(GL_LIGHTING);
-			light.bind();
-			light.updatePosition();
-		}
-		
-		if (tex != null) tex.bind();
-		if (prog != null) prog.use();
+		prog.use();
 		model.render(mode);
-		if (prog != null) prog.unuse();
-		if (tex != null) tex.unbind();
+		prog.unuse();
 
-		if (light != null) {
-			glDisable(GL_LIGHTING);
-			light.render();
-		}
-		
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
 		glEnable(GL_DEPTH_TEST);
@@ -271,30 +220,12 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public static void main(String[] args) {
-		start("res/OrangeCharacter.obj", null, GL_QUADS);
+		start("res/OrangeCharacter.obj", GL_QUADS);
 	}
 	
-	public static void start(String modelpath, String texturepath, int mode) {
+	public static void start(String modelpath, int mode) {
 		UniPrint.enabled = true;
-		UniverseEngineModelViewer viewer = 
-				new UniverseEngineModelViewer(modelpath, texturepath, mode, false);
-		
-		UniStdLight light = new UniStdLight(0, 4f, 4f, 4f, 1f);
-		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);
-		light.setDiffuse(0.8f, 0.8f, 0.8f, 1f);
-		light.setSpecular(1f, 1f, 1f, 1f);
-		
-		UniStdMaterial mat = new UniStdMaterial();
-		mat.setAmbient(1f, 0.7f, 0f, 1f);
-		mat.setDiffuse(1f, 0.5f, 0f, 1f);
-		mat.setSpecular(1f, 1f, 1f, 1f);
-		mat.setShininess(60f);
-		
-		viewer.setLight(light);
-		viewer.setMaterial(mat);
-		
-		viewer.lateStart();
-		
+		new UniverseEngineModelNormalsViewer(modelpath, mode);
 	}
 
 }
