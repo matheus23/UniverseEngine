@@ -33,9 +33,6 @@ import org.lwjgl.input.Mouse;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
-import org.universeengine.opengl.shader.UniShader;
-import org.universeengine.opengl.shader.UniShaderProgram;
-import org.universeengine.opengl.shader.UniUniform;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
 
@@ -45,12 +42,10 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 	public static final int HEIGHT = 600;
 	
 	private UniAWTDisplay display;
-	private UniShaderProgram shader;
 	private boolean pressedF2 = false;
 	private UniLoop loop;
 	private UniTexture tex;
 	private SimpleShape triangle;
-	private UniUniform uniform;
 	
 	public UniverseEngine2DTest() {
 		display = new UniAWTDisplay(WIDTH, HEIGHT, "OpenGLTest");
@@ -78,13 +73,8 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 		System.out.printf("GLSL version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 		System.out.printf("OpenGL version: %s\n", glGetString(GL_VERSION));
 
-		shader = new UniShaderProgram(
-				new UniShader("vertex_shader.vert", UniShader.VERTEX_SHADER),
-				new UniShader("fragment_shader.frag", UniShader.FRAGMENT_SHADER));
 		// The Folder "res" is ignored by GIT, you will have to create it on your own.
 		tex = UniTextureLoader.loadTexture("res/yo.png");
-		uniform = new UniUniform("color", shader);
-		triangle = new SimpleShape(tex);
 	}
 
 	public void tick() {
@@ -108,8 +98,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 		float my = Mouse.getY();
 		glTranslatef(mx, my, 0f);
 		
-		shader.use();
-		uniform.uniform4f(0.2f, 1f, 0.2f, 1f);
+		glColor4f(0.2f, 1f, 0.2f, 1f);
 		glBegin(GL_QUADS);
 		{
 			glVertex2f(- 20.0f, - 20.0f);
@@ -118,7 +107,6 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 			glVertex2f(- 20.0f, + 20.0f);
 		}
 		glEnd();
-		shader.unuse();
 		
 		tex.bind();
 		glBegin(GL_QUADS);
