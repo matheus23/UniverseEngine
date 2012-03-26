@@ -5,6 +5,7 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -146,6 +147,17 @@ public class UniAWTDisplay implements UniPrintable, UniDisplay {
 	public boolean isDebugEnabled() {
 		return debug;
 	}
+	
+	/**
+	 * @return whether the AWT Frame is Maximized or not.
+	 */
+	public boolean isMaximized() {
+		return ((frame.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH);
+	}
+	
+	public GraphicsConfiguration getCurrentGraphicsConfiguration() {
+		return frame.getGraphicsConfiguration();
+	}
 
 	/**
 	 * @return all available Screen Devices.
@@ -232,7 +244,8 @@ public class UniAWTDisplay implements UniPrintable, UniDisplay {
 	}
 	
 	public int getBPP() {
-		return frame.getColorModel().getPixelSize()/8;
+//		return canvas.getColorModel().getPixelSize()/8;
+		return Display.getDisplayMode().getBitsPerPixel()/8;
 	}
 	
 	/**

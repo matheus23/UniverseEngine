@@ -1,11 +1,19 @@
 package org.universeengine.display;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_FRONT;
+import static org.lwjgl.opengl.GL11.GL_RGB;
+import static org.lwjgl.opengl.GL11.GL_RGBA;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11.GL_VIEWPORT;
+import static org.lwjgl.opengl.GL11.glGetInteger;
+import static org.lwjgl.opengl.GL11.glReadBuffer;
+import static org.lwjgl.opengl.GL11.glReadPixels;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
@@ -87,9 +95,25 @@ public class UniLoop implements UniPrintable {
 	public void saveScreenshot(String filepath) {
 		if (!saving) {
 			glReadBuffer(GL_FRONT);
-			int width = display.getWidth();
-			int height = display.getHeight();
+			IntBuffer viewport = BufferUtils.createIntBuffer(16);
+			viewport.rewind();
+			glGetInteger(GL_VIEWPORT, viewport);
+			viewport.rewind();
+			UniPrint.printoutf(this, "Viewport size: (%d, %d) (%d, %d)\n", 
+					viewport.get(0), viewport.get(1), viewport.get(2), viewport.get(3));
+			int width = viewport.get(2);
+			int height = viewport.get(3);
 			int bpp = display.getBPP();
+			
+			if (display instanceof UniAWTDisplay) {
+				UniAWTDisplay awtdisplay = (UniAWTDisplay) display;
+				boolean maximized = awtdisplay.isMaximized();
+				System.out.println("Frame is " + (maximized ? "" : "not ") + "maximized");
+				if (maximized) {
+					bpp = 4;
+				}
+			}
+			
 			UniPrint.printoutf(this, 
 				"Saving screenshot... Bytes per Pixel: %d\n", bpp);
 			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
