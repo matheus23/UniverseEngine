@@ -18,6 +18,7 @@ import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
 import org.universeengine.opengl.model.modelloader.UniModelLoaderException;
 import org.universeengine.opengl.model.renderer.UniStandardRenderer;
+import org.universeengine.opengl.shader.UniShader;
 import org.universeengine.opengl.shader.UniShaderProgram;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
@@ -236,7 +237,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public static void main(String[] args) {
-		UniPrint.enabled = false;
+		UniPrint.enabled = true;
 		UniverseEngineModelViewer viewer = 
 				new UniverseEngineModelViewer("res/OrangeCharacter.obj", null, GL_QUADS, false);
 		
@@ -253,6 +254,12 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		
 		viewer.setLight(light);
 		viewer.setMaterial(mat);
+		
+		UniShader vert = new UniShader("print_vertex_normals.vert", UniShader.VERTEX_SHADER);
+		UniShader norm = new UniShader("print_vertex_normals.frag", UniShader.FRAGMENT_SHADER);
+		UniShaderProgram prog = new UniShaderProgram(vert, norm);
+		
+		viewer.setShaderProgram(prog);
 		
 		viewer.lateStart();
 	}

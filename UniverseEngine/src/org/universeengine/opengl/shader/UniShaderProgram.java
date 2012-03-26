@@ -25,10 +25,13 @@ public class UniShaderProgram implements UniPrintable {
 	 */
 	public UniShaderProgram(UniShader vertexShader, UniShader fragmentShader) {
 		works = false;
+		
 		this.vertexShader = vertexShader;
 		this.fragmentShader = fragmentShader;
+		
 		boolean leaveVertexShader = vertexShader == null;
 		boolean leaveFragmentShader = fragmentShader == null;
+		
 		if (leaveVertexShader && leaveFragmentShader) {
 			UniPrint.printerrf(this, "Cannot create ShaderProgram without Shaders.\n" +
 					"Both Shaders are Null!\n");
@@ -38,18 +41,25 @@ public class UniShaderProgram implements UniPrintable {
 			UniPrint.printerrf(this, "Could not allocate ShaderObject!\n");
 			return;
 		}
-		if (!(leaveVertexShader ? true : vertexShader.works()) 
-				| !(leaveFragmentShader ? true : fragmentShader.works())) {
+		
+		boolean vertWorks = true;
+		if (!leaveVertexShader) vertWorks = vertexShader.works();
+		boolean fragWorks = true;
+		if (!leaveFragmentShader) fragWorks = fragmentShader.works();
+		
+		if (!(vertWorks) | !(fragWorks)) {
 			UniPrint.printerrf(this, "One of the given Shaders does not work!\n" +
 					"Printing the InfoLog:\n");
 			UniShader.printLogInfo(pointerAdress, getClassName());
 			return;
 		}
+		
 		if (!leaveVertexShader) ARBShaderObjects.glAttachObjectARB(pointerAdress, vertexShader.getShaderPointer());
 		if (!leaveFragmentShader) ARBShaderObjects.glAttachObjectARB(pointerAdress, fragmentShader.getShaderPointer());
+		
 		ARBShaderObjects.glLinkProgramARB(pointerAdress);
 		ARBShaderObjects.glValidateProgramARB(pointerAdress);
-		System.out.printf("ShaderProgram:\n >> Printing Info Log:\n");
+		UniPrint.printf("ShaderProgram:\n >> Printing Info Log:\n");
 		if (UniShader.printLogInfo(pointerAdress, getClassName())) {
 			UniPrint.printerrf(this, "Error after linking and validating Program\n" +
 					"VertexShader Source:\n%s\n" +
@@ -57,6 +67,7 @@ public class UniShaderProgram implements UniPrintable {
 					vertexShader.getSource(), fragmentShader.getSource());
 			return;
 		}
+		
 		works = true;
 	}
 	
@@ -82,6 +93,7 @@ public class UniShaderProgram implements UniPrintable {
 	 * This is Depricated!
 	 * Use
 	 * 	use();
+	 *  // UniUniform calls;
 	 * 	glBegin(mode);
 	 * instead!
 	 */
