@@ -75,6 +75,7 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 
 		// The Folder "res" is ignored by GIT, you will have to create it on your own.
 		tex = UniTextureLoader.loadTexture("res/yo.png");
+		triangle = new SimpleShape(tex);
 	}
 
 	public void tick() {
