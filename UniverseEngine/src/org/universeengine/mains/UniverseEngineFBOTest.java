@@ -40,6 +40,7 @@ import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL11.glShadeModel;
 import static org.lwjgl.opengl.GL11.glTexCoord2f;
+import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex3f;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
@@ -182,7 +183,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		} else {
 			glColor4f(1f, 0.5f, 0f, 1f);
 		}
-		cam.apply();
+		glTranslatef(0f, 0f, -10f);
 		
 		if (light != null) {
 			glEnable(GL_LIGHTING);
