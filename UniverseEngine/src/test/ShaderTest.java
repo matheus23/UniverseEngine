@@ -18,7 +18,7 @@ public class ShaderTest implements UniShaderTestUniform {
 	}
 	
 	public static void main(String[] args) {
-		UniverseEngineShaderTest.start("res/bunny.obj", GL11.GL_TRIANGLES, new ShaderTest());
+		UniverseEngineShaderTest.start("res/OrangeCharacter.obj", GL11.GL_QUADS, new ShaderTest());
 	}
 
 }

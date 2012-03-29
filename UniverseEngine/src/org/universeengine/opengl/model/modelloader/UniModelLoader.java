@@ -81,6 +81,8 @@ import org.universeengine.util.UniPrint;
  * 
  * Also, I might take my time to write a Blender Export script,
  * so that developing games with this Engine will be a lot easier.
+ * Right now as an alternative, you can use Blender's standard 
+ * OBJ Exporter, and import these models with this OBJ Loader.
  * 
  * @author matheus23
  */
@@ -102,6 +104,15 @@ public final class UniModelLoader {
 		public static final byte END_ELEMENT = -105;
 		public static final byte INDICES = -106;
 
+		/**
+		 * Loads a single .uem Model, and then returns
+		 * the UniModel instance.
+		 * 
+		 * @param filename the filepath to the .uem Model file.
+		 * @return the UniModel instance
+		 * @throws IOException thrown by fileIO
+		 * @throws UniModelLoaderException thrown, if loading errors occur
+		 */
 		public static UniModel load(String filename) throws IOException, UniModelLoaderException {
 			if (!filename.contains(".uem")) {
 				throw new IOException(String.format("UEM.load() cannot load from files, which aren't .uem: %s", filename));
@@ -223,6 +234,147 @@ public final class UniModelLoader {
 				}
 			}
 			return meshes;
+		}
+		
+		/**
+		 * Writes Model data from
+		 *  - vertices
+		 *  - colors
+		 *  - normals
+		 *  - textureCoords
+		 *  - indices
+		 * into a .uem file.
+		 * 
+		 * colors, normals or textureCoords may be null,
+		 * but vertices and indices may not.
+		 * 
+		 * The data to be given, are the 3-Dimensional
+		 * arrays, while the first dimension specifies
+		 * the Meshes, the second dimension, the number
+		 * of data Element, and the last dimension, the
+		 * lastly given data (in floats).
+		 * 
+		 * For indices-data array, the first dimension
+		 * are the Meshes and the second dimension the
+		 * data itself.
+		 * 
+		 * @param filepath the filepath to be written to.
+		 * @param vertices the vertices-data-array
+		 * @param colors the color-data-array
+		 * @param normals the normal-data-array
+		 * @param textureCoords the textureCoords-data-array
+		 * @param indices the indices-data-array
+		 * @throws IOException thrown by fileIO.
+		 * @throws UniModelLoaderException thrown, when loading errors occur. 
+		 */
+		public static void writeModel(String filepath, float[][][] vertices, float[][][] colors, float[][][] normals, float[][][] textureCoords, int[][] indices) throws IOException, UniModelLoaderException {
+			if (!filepath.contains(".uem")) {
+				throw new UniModelLoaderException("Can only save into files, with .uem suffix");
+			}
+			File file = new File(filepath);
+			if (file.exists()) {
+				throw new UniModelLoaderException(String.format("File \"%s\" is already existing", filepath));
+			}
+			writeModel(file, vertices, colors, normals, textureCoords, indices);
+		}
+		
+		public static void writeModel(File file, float[][][] vert, float[][][] col, float[][][] norm, float[][][] texCoord, int[][] ind) throws IOException, UniModelLoaderException {
+			FileOutputStream fos = new FileOutputStream(file);
+			DataOutputStream dos = new DataOutputStream(fos);
+			
+			if (vert == null || vert.length == 0) {
+				throw new UniModelLoaderException("Cannot save 0 Meshes. Makes no sense. (vert.length == 0 || vert == null)");
+			}  if (ind == null || ind.length == 0) {
+				throw new UniModelLoaderException("Cannot save 0 Meshes. Makes no sense. (ind.length == 0 || ind == null)");
+			}
+			
+			if (col != null && col.length != vert.length) {
+				throw new UniModelLoaderException("Number of Meshes in vertex-array and color-array is not equal");
+			} if (norm != null && norm.length != vert.length) {
+				throw new UniModelLoaderException("Number of Meshes in vertex-array and normal-array is not equal");
+			} if (texCoord != null && texCoord.length != vert.length) {
+				throw new UniModelLoaderException("Number of Meshes in vertex-array and texture-coord-array is not equal");
+			} if (ind.length != vert.length) {
+				throw new UniModelLoaderException("Number of Meshes in vertex-array and indice-array is not equal");
+			}
+			
+			dos.writeByte(START);
+			{
+				dos.writeByte(MESH);
+				dos.writeInt(vert.length);
+				
+				for (int i = 0; i < vert.length; i++) {
+					writeMesh(dos, vert[i],
+							col != null ? col[i] : null,
+							norm != null ? norm[i] : null,
+							texCoord != null ? texCoord[i] : null,
+							ind[i]);
+				}
+			}
+			dos.writeByte(END);
+		}
+		
+		public static void writeMesh(DataOutputStream dos, float[][] vert, float[][] col, float[][] norm, float[][] texCoord, int[] ind) throws IOException, UniModelLoaderException {
+			if (vert == null || vert.length == 0) {
+				throw new UniModelLoaderException("ModelLoader hasn't got any vertices");
+			} if (ind == null || ind.length == 0) {
+				throw new UniModelLoaderException("ModelLoader hasn't got any indices");
+			}
+			
+			boolean useCol = col != null && col.length > 0;
+			boolean useNorm = norm != null && norm.length > 0;
+			boolean useTex = texCoord != null && texCoord.length > 0;
+			
+			if (useCol && vert.length != col.length) {
+				throw new UniModelLoaderException("Cannot write a uem model with vertices number != color number");
+			} if (useNorm && vert.length != norm.length) {
+				throw new UniModelLoaderException("Cannot write a uem model with vertices number != normal number");
+			} if (useTex && vert.length != texCoord.length) {
+				throw new UniModelLoaderException("Cannot write a uem model with vertices number != texture coord number");
+			}
+			
+			dos.writeByte(ELEMENTS);
+			dos.writeInt(ind.length);
+			{
+				try {
+					for (int i = 0; i < vert.length; i++) {
+						{
+							dos.writeByte(VERTICES);
+							dos.writeFloat(vert[i][0]);
+							dos.writeFloat(vert[i][1]);
+							dos.writeFloat(vert[i][2]);
+						}
+						if (useNorm) {
+							dos.writeByte(NORMALS);
+							dos.writeFloat(norm[i][0]);
+							dos.writeFloat(norm[i][1]);
+							dos.writeFloat(norm[i][2]);
+						}
+						if (useCol) {
+							dos.writeByte(COLORS);
+							dos.writeFloat(col[i][0]);
+							dos.writeFloat(col[i][1]);
+							dos.writeFloat(col[i][2]);
+						}
+						if (useTex) {
+							dos.writeByte(TEXCOORDS);
+							dos.writeFloat(texCoord[i][0]);
+							dos.writeFloat(texCoord[i][1]);
+						}
+						dos.writeByte(END_ELEMENT);
+					}
+				} catch(ArrayIndexOutOfBoundsException aioobe) {
+					UniPrint.printerrf("ModelLoader got an Array Index out of bounds exception, maybe one vertex-element is not filled?");
+					aioobe.printStackTrace();
+				}
+			}
+			
+			dos.writeByte(INDICES);
+			dos.writeInt(ind.length);
+			
+			for (int i = 0; i < ind.length; i++) {
+				dos.writeInt(ind[i]);
+			}
 		}
 		
 		public static void print(String filename) throws IOException, UniModelLoaderException {
@@ -655,6 +807,16 @@ public final class UniModelLoader {
 	
 	public static class OBJ {
 		
+		/**
+		 * Loads a single .obj file, from the given
+		 * filepath and directly returns a UniModel
+		 * instance.
+		 * 
+		 * @param filepath the filepath to the .obj Model file.
+		 * @return the UniModel instance.
+		 * @throws IOException thrown by fileIO
+		 * @throws UniModelLoaderException thrown, if loading errors occur.
+		 */
 		public static UniModel load(String filepath) throws IOException, UniModelLoaderException {
 			if (!filepath.contains(".obj")) {
 				throw new UniModelLoaderException(String.format("The given File %s is not from type .obj", filepath));
