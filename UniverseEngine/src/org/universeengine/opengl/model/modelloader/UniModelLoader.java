@@ -114,7 +114,7 @@ public final class UniModelLoader {
 		 * @throws UniModelLoaderException thrown, if loading errors occur
 		 */
 		public static UniModel load(String filename) throws IOException, UniModelLoaderException {
-			if (!filename.contains(".uem")) {
+			if (!filename.endsWith(".uem")) {
 				throw new IOException(String.format("UEM.load() cannot load from files, which aren't .uem: %s", filename));
 			} else {
 				File file = new File(filename);
@@ -712,7 +712,7 @@ public final class UniModelLoader {
 		public static final int HIERACHY_POSITION = 0xB030;
 		
 		public static void print(String filename) throws IOException, UniModelLoaderException {
-			if (!filename.contains(".3ds")) {
+			if (!filename.endsWith(".3ds")) {
 				throw new UniModelLoaderException(String.format
 						("The filepath %s, is not from type 3ds!\n", filename));
 			}
@@ -818,7 +818,7 @@ public final class UniModelLoader {
 		 * @throws UniModelLoaderException thrown, if loading errors occur.
 		 */
 		public static UniModel load(String filepath) throws IOException, UniModelLoaderException {
-			if (!filepath.contains(".obj")) {
+			if (!filepath.endsWith(".obj")) {
 				throw new UniModelLoaderException(String.format("The given File %s is not from type .obj", filepath));
 			}
 			File file = new File(filepath);

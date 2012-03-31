@@ -38,6 +38,7 @@ import static org.lwjgl.opengl.GL11.glLightModeli;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
+import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glShadeModel;
 import static org.lwjgl.opengl.GL11.glTexCoord2f;
 import static org.lwjgl.opengl.GL11.glTranslatef;
@@ -73,6 +74,9 @@ import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
 public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInputListener {
+	
+	public static final int FBO_WIDTH = 1024;
+	public static final int FBO_HEIGHT = 1024;
 
 	private UniLoop loop;
 	private UniAWTDisplay display;
@@ -90,6 +94,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	private UniStdLight light;
 	private UniStdMaterial mat;
 	private UniFrameBufferObject fbo;
+	private float angle;
 
 	public UniverseEngineFBOTest(String modelpath, String texturepath, int mode, boolean start) {
 		this.modelpath = modelpath;
@@ -128,7 +133,6 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_DEPTH_TEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 		glEnable(GL_CULL_FACE);
@@ -156,7 +160,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 			tex = UniTextureLoader.loadTexture(texturepath);
 		}
 		try {
-			fbo = new UniFrameBufferObject(512, 512, true);
+			fbo = new UniFrameBufferObject(FBO_WIDTH, FBO_HEIGHT, true);
 		} catch (UniGLVersionException e) {
 			UniPrint.printerrf("FBO not supported!\n");
 			e.printStackTrace();
@@ -173,22 +177,32 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 
 	public void render() {
 		// FBO Render Pass:
+		renderFBO();
+
+		// Real render pass:
+		renderCube();
+	}
+	
+	public void renderFBO() {
 		// Bind FBO:
 		fbo.bind();
+		glClearColor(0f, 0.2f, 0.4f, 0f);
 		// Render into FBO:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
+		setUpViewport(FBO_WIDTH, FBO_HEIGHT);
 		if (!wireFrame) {
 			glColor4f(1f, 1f, 1f, 1f);
 		} else {
 			glColor4f(1f, 0.5f, 0f, 1f);
 		}
-		glTranslatef(0f, 0f, -10f);
+		glTranslatef(0f, 0f, -12f);
+		glRotatef(angle, 0f, 1f, 0f);
+		angle += 1f;
 		
 		if (light != null) {
 			glEnable(GL_LIGHTING);
 			light.bind();
-			light.updatePosition();
 		}
 		
 		if (tex != null) tex.bind();
@@ -197,7 +211,6 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 
 		if (light != null) {
 			glDisable(GL_LIGHTING);
-			light.render();
 		}
 		
 		glDisable(GL_DEPTH_TEST);
@@ -205,10 +218,13 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		glEnable(GL_DEPTH_TEST);
 		// Unbind FBO:
 		fbo.unbind();
-
-		// Real render pass:
+	}
+	
+	public void renderCube() {
+		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
+		setUpViewport(loop.display.getWidth(), loop.display.getHeight());
 		if (!wireFrame) {
 			glColor4f(1f, 1f, 1f, 1f);
 		} else {
@@ -216,10 +232,12 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		}
 		cam.apply();
 		
+		glDisable(GL_BLEND);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, fbo.getTextureID());
 		drawBox();
 		glDisable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
 
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
@@ -308,7 +326,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	public void setUpViewport(int width, int height) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(50f, ((float)width) / ((float)height), 0.01f, 64f);
+		gluPerspective(50f, ((float)width) / ((float)height), 0.1f, 64f);
 		glViewport(0, 0, width, height);
 		glMatrixMode(GL_MODELVIEW);
 	}
@@ -339,7 +357,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	}
 
 	public static void main(String[] args) {
-		start("res/OrangeCharacter.obj", null, GL_QUADS);
+		start("res/OrangeCharacterHighRes.obj", null, GL_QUADS);
 	}
 	
 	public static void start(String modelpath, String texturepath, int mode) {
@@ -362,7 +380,6 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		viewer.setMaterial(mat);
 		
 		viewer.lateStart();
-		
 	}
 
 }

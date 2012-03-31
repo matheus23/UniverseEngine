@@ -16,6 +16,14 @@ public class UniFrameBufferObject {
 	private int depthBufferID;
 	
 	public UniFrameBufferObject(int width, int height, boolean linear) throws UniGLVersionException {
+		this(width, height, GL_RGBA8, GL_RGBA, linear);
+	}
+	
+	public UniFrameBufferObject(int width, int height, int internalFormat, int format, boolean linear) throws UniGLVersionException {
+		this(width, height, internalFormat, format, linear, linear);
+	}
+	
+	public UniFrameBufferObject(int width, int height, int internalFormat, int format, boolean minLinear, boolean magLinear) throws UniGLVersionException {
 		if (!GLContext.getCapabilities().GL_EXT_framebuffer_object) {
 			throw new UniGLVersionException("FrameBufferObject not supported with this GPU / Drivers");
 		}
@@ -26,13 +34,10 @@ public class UniFrameBufferObject {
 		bind();
 		
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minLinear ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magLinear ? GL_LINEAR : GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_INT, (ByteBuffer) null);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, textureID, 0);
-		
-		unbind();
-		
-		bind();
 		
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthBufferID);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
