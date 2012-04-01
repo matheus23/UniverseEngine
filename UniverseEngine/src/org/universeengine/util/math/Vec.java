@@ -105,6 +105,43 @@ public class Vec {
 		div(this, length());
 	}
 	
+	public void add(Vec v1, Vec v2) {
+		int num = Math.min(Math.min(v1.data.length, v2.data.length), data.length);
+		for (int i = 0; i < num; i++) {
+			data[i] = v1.data[i] + v2.data[i];
+		}
+	}
+	
+	public void sub(Vec v1, Vec v2) {
+		int num = Math.min(Math.min(v1.data.length, v2.data.length), data.length);
+		for (int i = 0; i < num; i++) {
+			data[i] = v1.data[i] - v2.data[i];
+		}
+	}
+	
+	public void mult(Vec v1, Vec v2) {
+		int num = Math.min(Math.min(v1.data.length, v2.data.length), data.length);
+		for (int i = 0; i < num; i++) {
+			data[i] = v1.data[i] * v2.data[i];
+		}
+	}
+	
+	public void div(Vec v1, Vec v2) {
+		int num = Math.min(Math.min(v1.data.length, v2.data.length), data.length);
+		for (int i = 0; i < num; i++) {
+			data[i] = v1.data[i] / v2.data[i];
+		}
+	}
+	
+	public void cross(Vec v1, Vec v2) {
+		if (v1.data.length != 3 || v2.data.length != 3) {
+			throw new IllegalArgumentException(String.format("Unsupported Data-length for computing cross-product: v1.data.lengt: %d, v2.data.length: %d", v2.data.length, v2.data.length));
+		}
+		data[0] = v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1];
+		data[1] = v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2];
+		data[2] = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];
+	}
+	
 	public String toString() {
 		StringBuffer dataStr = new StringBuffer();
 		for (int i = 0; i < data.length; i++) {
@@ -141,7 +178,7 @@ public class Vec {
 		}
 	}
 	
-	public static Vec add(Vec v1, Vec v2) {
+	public static Vec addVec(Vec v1, Vec v2) {
 		int num = Math.min(v1.data.length, v2.data.length);
 		Vec vec = new Vec(num);
 		for (int i = 0; i < num; i++) {
@@ -150,7 +187,7 @@ public class Vec {
 		return vec;
 	}
 	
-	public static Vec sub(Vec v1, Vec v2) {
+	public static Vec subVec(Vec v1, Vec v2) {
 		int num = Math.min(v1.data.length, v2.data.length);
 		Vec vec = new Vec(num);
 		for (int i = 0; i < num; i++) {
@@ -159,7 +196,7 @@ public class Vec {
 		return vec;
 	}
 	
-	public static Vec mult(Vec v1, Vec v2) {
+	public static Vec multVec(Vec v1, Vec v2) {
 		int num = Math.min(v1.data.length, v2.data.length);
 		Vec vec = new Vec(num);
 		for (int i = 0; i < num; i++) {
@@ -168,7 +205,7 @@ public class Vec {
 		return vec;
 	}
 	
-	public static Vec div(Vec v1, Vec v2) {
+	public static Vec divVec(Vec v1, Vec v2) {
 		int num = Math.min(v1.data.length, v2.data.length);
 		Vec vec = new Vec(num);
 		for (int i = 0; i < num; i++) {
@@ -186,7 +223,7 @@ public class Vec {
 		return f;
 	}
 	
-	public static Vec cross(Vec v1, Vec v2) {
+	public static Vec crossVec(Vec v1, Vec v2) {
 		if (v1.data.length != 3 || v2.data.length != 3) {
 			throw new IllegalArgumentException(String.format("Unsupported Data-length for computing cross-product: v1.data.lengt: %d, v2.data.length: %d", v2.data.length, v2.data.length));
 		}
@@ -194,43 +231,6 @@ public class Vec {
 				v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1],
 				v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2],
 				v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0]);
-	}
-	
-	public static void add(Vec v1, Vec v2, Vec dest) {
-		int num = Math.min(Math.min(v1.data.length, v2.data.length), dest.data.length);
-		for (int i = 0; i < num; i++) {
-			dest.data[i] = v1.data[i] + v2.data[i];
-		}
-	}
-	
-	public static void sub(Vec v1, Vec v2, Vec dest) {
-		int num = Math.min(Math.min(v1.data.length, v2.data.length), dest.data.length);
-		for (int i = 0; i < num; i++) {
-			dest.data[i] = v1.data[i] - v2.data[i];
-		}
-	}
-	
-	public static void mult(Vec v1, Vec v2, Vec dest) {
-		int num = Math.min(Math.min(v1.data.length, v2.data.length), dest.data.length);
-		for (int i = 0; i < num; i++) {
-			dest.data[i] = v1.data[i] * v2.data[i];
-		}
-	}
-	
-	public static void div(Vec v1, Vec v2, Vec dest) {
-		int num = Math.min(Math.min(v1.data.length, v2.data.length), dest.data.length);
-		for (int i = 0; i < num; i++) {
-			dest.data[i] = v1.data[i] / v2.data[i];
-		}
-	}
-	
-	public static void cross(Vec v1, Vec v2, Vec dest) {
-		if (v1.data.length != 3 || v2.data.length != 3) {
-			throw new IllegalArgumentException(String.format("Unsupported Data-length for computing cross-product: v1.data.lengt: %d, v2.data.length: %d", v2.data.length, v2.data.length));
-		}
-		dest.data[0] = v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1];
-		dest.data[1] = v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2];
-		dest.data[2] = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];
 	}
 	
 	public static void main(String[] args) {
@@ -250,13 +250,13 @@ public class Vec {
 		Vec vec2 = new Vec(5f, 3f);
 		System.out.println("Vec1: " + vec1.toString());
 		System.out.println("Vec2: " + vec2.toString());
-		System.out.println("Sub result: " + sub(vec1, vec2));
+		System.out.println("Sub result: " + subVec(vec1, vec2));
 		
 		System.out.println("---------------------");
 		
 		Vec dest = new Vec(4);
 		System.out.println("Dest: " + dest);
-		mult(vec1, vec2, dest);
+		dest.mult(vec1, vec2);
 		System.out.println("Dest after multiplicating Vec1, Vec2: " + dest);
 		
 		System.out.println("---------------------");
@@ -276,11 +276,11 @@ public class Vec {
 		System.out.println("Cross Product from: ");
 		System.out.println("v1: " + v1);
 		System.out.println("v2: " + v2);
-		System.out.println("Cross vector: " + cross(v1, v2));
+		System.out.println("Cross vector: " + crossVec(v1, v2));
 		
 		System.out.println("---------------------");
 		
-		Vec vecCross = cross(v1, v2);
+		Vec vecCross = crossVec(v1, v2);
 		System.out.println("Dot Product from v1 and v2: " + dot(v1, v2));
 		
 		System.out.println("v1 dot vecCross: " + dot(v1, vecCross));

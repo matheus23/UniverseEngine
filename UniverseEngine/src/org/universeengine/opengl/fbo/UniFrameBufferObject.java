@@ -43,7 +43,37 @@ public class UniFrameBufferObject {
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthBufferID);
 		
+		checkCompleteness();
+		
 		unbind();
+	}
+	
+	private void checkCompleteness() {
+		int framebuffer = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+		switch ( framebuffer ) {
+		case GL_FRAMEBUFFER_COMPLETE_EXT:
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+			throw new RuntimeException("FrameBuffer: " + fboID
+					+ ", has caused a GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT exception");
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+			throw new RuntimeException("FrameBuffer: " + fboID
+					+ ", has caused a GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT exception");
+		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+			throw new RuntimeException("FrameBuffer: " + fboID
+					+ ", has caused a GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT exception");
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+			throw new RuntimeException("FrameBuffer: " + fboID
+					+ ", has caused a GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT exception");
+		case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+			throw new RuntimeException("FrameBuffer: " + fboID
+				+ ", has caused a GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT exception");
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+			throw new RuntimeException("FrameBuffer: " + fboID
+					+ ", has caused a GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT exception");
+		default:
+			throw new RuntimeException("Unexpected reply from glCheckFramebufferStatusEXT: " + framebuffer);
+		}
 	}
 	
 	public void bind() {
