@@ -3,6 +3,7 @@ package org.universeengine.opengl.fbo;
 import static org.lwjgl.opengl.EXTFramebufferObject.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.util.glu.GLU.*;
 
 import java.nio.ByteBuffer;
 
@@ -14,6 +15,8 @@ public class UniFrameBufferObject {
 	private int textureID;
 	private int fboID;
 	private int depthBufferID;
+	private int width;
+	private int height;
 	
 	public UniFrameBufferObject(int width, int height, boolean linear) throws UniGLVersionException {
 		this(width, height, GL_RGBA8, GL_RGBA, linear);
@@ -27,11 +30,13 @@ public class UniFrameBufferObject {
 		if (!GLContext.getCapabilities().GL_EXT_framebuffer_object) {
 			throw new UniGLVersionException("FrameBufferObject not supported with this GPU / Drivers");
 		}
+		this.width = width;
+		this.height = height;
 		fboID = glGenFramebuffersEXT();
 		textureID = glGenTextures();
 		depthBufferID = glGenRenderbuffersEXT();
 		
-		bind();
+		bindStatic();
 		
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minLinear ? GL_LINEAR : GL_NEAREST);
@@ -45,7 +50,7 @@ public class UniFrameBufferObject {
 		
 		checkCompleteness();
 		
-		unbind();
+		unbindStatic();
 	}
 	
 	private void checkCompleteness() {
@@ -76,12 +81,39 @@ public class UniFrameBufferObject {
 		}
 	}
 	
-	public void bind() {
+	public void bind(boolean ortho, float fovy, float zNear, float zFar) {
+		glPushAttrib(GL_VIEWPORT_BIT);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glMatrixMode(GL_MODELVIEW);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+		glViewport(0, 0, width, height);
+		if (ortho) {
+			glOrtho(0, width, 0, height, zNear, zFar);
+		} else {
+			gluPerspective(fovy, (float)width / (float)height, zNear, zFar);
+		}
+	}
+	
+	public void bindStatic() {
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+	}
+	
+	public void unbindStatic() {
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
 	
 	public void unbind() {
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopAttrib();
+	}
+	
+	public void destroy() {
+		glDeleteFramebuffersEXT(fboID);
+		glDeleteRenderbuffersEXT(depthBufferID);
 	}
 	
 	public int getTextureID() {

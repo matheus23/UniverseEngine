@@ -185,12 +185,11 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	
 	public void renderFBO() {
 		// Bind FBO:
-		fbo.bind();
+		fbo.bind(false, 50f, 0.1f, 64f);
 		glClearColor(0f, 0.2f, 0.4f, 0f);
 		// Render into FBO:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		setUpViewport(FBO_WIDTH, FBO_HEIGHT);
 		if (!wireFrame) {
 			glColor4f(1f, 1f, 1f, 1f);
 		} else {
@@ -291,6 +290,8 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	}
 
 	public void end() {
+		model.destroy();
+		fbo.destroy();
 	}
 	
 	public void keyPressed(int key) {
