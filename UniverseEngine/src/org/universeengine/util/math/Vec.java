@@ -82,6 +82,15 @@ public class Vec {
 		data[3] = w;
 	}
 	
+	public void set(float... data) {
+		if (data.length != this.data.length) {
+			throw new IllegalArgumentException("The given \"data\" Array's length is not equal to the size of this Vector!");
+		}
+		for (int i = 0; i < data.length; i++) {
+			this.data[i] = data[i];
+		}
+	}
+	
 	public void clamp(float f) {
 		for (int i = 0; i < data.length; i++) {
 			while(data[i] > f) {

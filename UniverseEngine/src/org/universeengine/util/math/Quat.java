@@ -56,6 +56,18 @@ public class Quat extends Vec {
 				 / q1.data[0] * q1.data[0] + q1.data[1] * q1.data[1] + q1.data[2] * q1.data[2] + q1.data[3] * q1.data[3]);
 	 }
 	 
+	 public void rotVec(Vec v) {
+		 Vec temp = new Vec(
+			 (1 - 2 * sq(data[2]) - 2 * sq(data[3])) * 2 * (data[1] * data[2] + data[0] * data[3]) * 2 * (data[1] * data[3] - data[0] * data[2]),
+			 2 * (data[1] * data[2] - data[0] * data[3]) * (1 - 2 * sq(data[2]) - 2 * sq(data[3])) * 2 * (data[2] * data[3] + data[0] * data[1]),
+			 2 * (data[1] * data[3] + data[0] * data[2]) * 2 * (data[2] * data[3] - data[0] * data[1]) * (1 - 2 * sq(data[2]) - 2 * sq(data[3])));
+		 v.mult(temp, v);
+	 }
+	 
+	 private static float sq(float f) {
+		 return f*f;
+	 }
+	 
 	 public static Quat addQuat(Quat q1, Quat q2) {
 		 return new Quat(
 				 q1.data[0] + q2.data[0],
@@ -93,6 +105,14 @@ public class Quat extends Vec {
 				 
 				 (q1.data[0] - q2.data[3] + q1.data[1] * q2.data[2] - q1.data[2] * q2.data[1] + q1.data[3] * q2.data[0])
 				 / q1.data[0] * q1.data[0] + q1.data[1] * q1.data[1] + q1.data[2] * q1.data[2] + q1.data[3] * q1.data[3]);
+	 }
+	 
+	 public static Vec rotVec(Vec v, Quat q) {
+		 Vec temp = new Vec(
+			 (1 - 2 * sq(q.data[2]) - 2 * sq(q.data[3])) * 2 * (q.data[1] * q.data[2] + q.data[0] * q.data[3]) * 2 * (q.data[1] * q.data[3] - q.data[0] * q.data[2]),
+			 2 * (q.data[1] * q.data[2] - q.data[0] * q.data[3]) * (1 - 2 * sq(q.data[2]) - 2 * sq(q.data[3])) * 2 * (q.data[2] * q.data[3] + q.data[0] * q.data[1]),
+			 2 * (q.data[1] * q.data[3] + q.data[0] * q.data[2]) * 2 * (q.data[2] * q.data[3] - q.data[0] * q.data[1]) * (1 - 2 * sq(q.data[2]) - 2 * sq(q.data[3])));
+		 return multVec(temp, v);
 	 }
 	 
 	 public static void main(String[] args) {

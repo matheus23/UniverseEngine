@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.lwjgl.util.vector.Quaternion;
 import org.universeengine.exceptions.UniGLVersionException;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.UniModel;
@@ -22,6 +23,8 @@ import org.universeengine.opengl.vertex.UniNormal3f;
 import org.universeengine.opengl.vertex.UniTexCoord2f;
 import org.universeengine.opengl.vertex.UniVertex3f;
 import org.universeengine.util.UniPrint;
+import org.universeengine.util.math.Quat;
+import org.universeengine.util.math.Vec;
 
 /**
  * Short: to load UEM-Models, use UEM.load(), to load other formats use the static classes inside.
@@ -849,7 +852,7 @@ public final class UniModelLoader {
 			while((line = reader.readLine()) != null) {
 				if (line.isEmpty()) continue;
 				if (line.charAt(0) == '#') continue;
-				st = new StringTokenizer(line, " ");
+				st = new StringTokenizer(line);
 				
 				prefix = st.nextToken();
 				if (prefix.equals("mtllib")) {
@@ -986,6 +989,265 @@ public final class UniModelLoader {
 		}
 	}
 
+	public static class MD5 {
+		
+		public static final String md5version = "10";
+		
+		public static UniModel loadModel(String filepath) throws IOException, UniModelLoaderException {
+			if (!filepath.endsWith(".md5mesh")) {
+				throw new UniModelLoaderException(String.format("The given File %s is not from type .md5model", filepath));
+			}
+			File file = new File(filepath);
+			if (!file.exists()) {
+				throw new UniModelLoaderException(String.format("The given File %s does not exist", filepath));
+			}
+			return loadModel(file);
+		}
+		
+		public static UniModel loadModel(File file) throws IOException, UniModelLoaderException {
+			FileReader reader = new FileReader(file);
+			BufferedReader br = new BufferedReader(reader);
+			return loadModel(br);
+		}
+		
+		public static UniModel loadModel(BufferedReader reader) throws IOException, UniModelLoaderException {
+			String line;
+			StringTokenizer st;
+			int numJoints = 0;
+			int numMeshes;
+			MD5Mesh[] md5meshes = null;
+			MD5Joint[] joints = null;
+			int meshind = 0;
+			String texLocation;
+			while((line = reader.readLine()) != null) {
+				if (line.isEmpty()) {
+					continue;
+				}
+				st = new StringTokenizer(line);
+				String prefix = st.nextToken();
+				if (prefix.isEmpty()) {
+					continue;
+				} else if (prefix.equals("MD5Version")) {
+					String version = st.nextToken();;
+					if (!version.equals(md5version)) {
+						throw new UniModelLoaderException(String.format(
+								"The MD5 ModelLoader only supports MD5 version %s," +
+								"the given Model is version %s", md5version, version));
+					}
+				} else if (prefix.equals("commandline")) {
+					// this is unused. Also, this is often only "".
+				} else if (prefix.equals("numJoints")) {
+					String jointnum = st.nextToken();
+					numJoints = Integer.valueOf(jointnum).intValue();
+					joints = new MD5Joint[numJoints];
+				} else if (prefix.equals("numMeshes")) {
+					String meshNum = st.nextToken();
+					numMeshes = Integer.valueOf(meshNum).intValue();
+					md5meshes = new MD5Mesh[numMeshes];
+				} else if (prefix.equals("joints")) {
+					st.nextToken(); // ignore the "{"
+					for (int i = 0; i < numJoints; i++) {
+						line = reader.readLine();
+						st = new StringTokenizer(line);
+						MD5Joint joint = new MD5Joint();
+						String name = rmQuotes(st.nextToken());
+						joint.name = name;
+						joint.parentID = Integer.valueOf(st.nextToken()).intValue();
+						st.nextToken();
+						joint.x = Float.valueOf(st.nextToken()).floatValue();
+						joint.y = Float.valueOf(st.nextToken()).floatValue();
+						joint.z = Float.valueOf(st.nextToken()).floatValue();
+						st.nextToken();
+						st.nextToken();
+						joint.q = new Quat(
+								Float.valueOf(st.nextToken()).floatValue(),
+								Float.valueOf(st.nextToken()).floatValue(),
+								Float.valueOf(st.nextToken()).floatValue(),
+								0f);
+						calcQuatW(joint.q);
+						joints[i] = joint;
+					}
+					while(!(line = reader.readLine()).equals("}")) {
+					}
+				} else if (prefix.equals("mesh")) {
+					int numverts;
+					int numtris;
+					int numweights;
+					MD5Vertex[] vert = null;
+					MD5Tri[] tris = null;
+					MD5Weight[] weights = null;
+					st.nextToken(); // ignore the "{"
+					while(!(line = reader.readLine()).equals("}")) {
+						st = new StringTokenizer(line);
+						if (line.isEmpty()) {
+							continue;
+						}
+						String element = st.nextToken();
+						if (element.equals("shader")) {
+							texLocation = rmQuotes(st.nextToken());
+						} else if (element.equals("numverts")) {
+							numverts = Integer.valueOf(st.nextToken()).intValue();
+							vert = new MD5Vertex[numverts];
+							MD5Vertex vertex;
+							for (int i = 0; i < numverts; i++) {
+								line = reader.readLine();
+								st = new StringTokenizer(line);
+								String mtoken = st.nextToken(); // get that "vert" away.
+								if (mtoken.equals("vert")) {
+									vertex = new MD5Vertex();
+									int index = Integer.valueOf(st.nextToken()).intValue(); // index of vertex.
+									st.nextToken(); // get that "(" away.
+									vertex.u = Float.valueOf(st.nextToken()).floatValue(); // tex x coord,
+									vertex.v = Float.valueOf(st.nextToken()).floatValue(); // tex y coord.
+									st.nextToken(); // get that ")" away.
+									vertex.startWeight = Integer.valueOf(st.nextToken()).intValue();
+									vertex.weightCount = Integer.valueOf(st.nextToken()).intValue();
+									vert[index] = vertex;
+								}
+							}
+						} else if (element.equals("numtris")) {
+							numtris = Integer.valueOf(st.nextToken()).intValue();
+							tris = new MD5Tri[numtris];
+							MD5Tri triangle;
+							for (int i = 0; i < numtris; i++) {
+								line = reader.readLine();
+								st = new StringTokenizer(line);
+								String mtoken = st.nextToken(); // get that "tri" away.
+								if (mtoken.equals("tri")) {
+									triangle = new MD5Tri();
+									int index = Integer.valueOf(st.nextToken()).intValue(); // index of triangle.
+									triangle.ind1 = Integer.valueOf(st.nextToken()).intValue(); // index of 1st vertex.
+									triangle.ind2 = Integer.valueOf(st.nextToken()).intValue(); // index of 2nd vertex.
+									triangle.ind3 = Integer.valueOf(st.nextToken()).intValue(); // index of 3rd vertex;
+									tris[index] = triangle;
+								}
+							}
+						} else if (element.equals("numweights")) {
+							numweights = Integer.valueOf(st.nextToken()).intValue();
+							weights = new MD5Weight[numweights];
+							MD5Weight weight;
+							for (int i = 0; i < numweights; i++) {
+								line = reader.readLine();
+								st = new StringTokenizer(line);
+								String mtoken = st.nextToken(); // get rid of that "weight".
+								if (mtoken.equals("weight")) {
+									weight = new MD5Weight();
+									int index = Integer.valueOf(st.nextToken()).intValue(); // index of weight.
+									weight.jointID = Integer.valueOf(st.nextToken()).intValue(); // weight's joint ID.
+									weight.bias = Float.valueOf(st.nextToken()).floatValue(); // weight's bias.
+									st.nextToken(); // get rid of that "("
+									weight.x = Float.valueOf(st.nextToken()).floatValue(); // vertex's x position.
+									weight.y = Float.valueOf(st.nextToken()).floatValue(); // vertex's y position.
+									weight.z = Float.valueOf(st.nextToken()).floatValue(); // vertex's z position.
+									st.nextToken(); // get rid of that ")"
+									weights[i] = weight;
+								}
+							}
+						}
+					}
+					md5meshes[meshind] = new MD5Mesh();
+					md5meshes[meshind].vertices = vert;
+					md5meshes[meshind].triangles = tris;
+					md5meshes[meshind].weights = weights;
+				}
+			}
+			new MD5FinalMesh(md5meshes[0], joints);
+			return null;
+		}
+		
+		private static String rmQuotes(String str) {
+			StringBuffer strbuf = new StringBuffer(str);
+			strbuf.deleteCharAt(0);
+			strbuf.deleteCharAt(strbuf.length()-1);
+			return strbuf.toString();
+		}
+		
+		private static Quat calcQuatW(Quat q) {
+			float t = 1.0f - (q.x() * q.x()) - (q.y() * q.y()) - (q.z() * q.z());
+			if (t < 0.0f) {
+				q.w(0.0f);
+			} else {
+				q.w(-(float)Math.sqrt(t));
+			}
+			return q;
+		}
+		
+		private static class MD5Joint {
+			String name;
+			int parentID;
+			float x;
+			float y;
+			float z;
+			Quat q;
+		}
+		
+		private static class MD5Vertex {
+			float u;
+			float v;
+			int startWeight;
+			int weightCount;
+		}
+		
+		private static class MD5Tri {
+			int ind1;
+			int ind2;
+			int ind3;
+		}
+		
+		private static class MD5Weight {
+			int jointID;
+			float bias;
+			float x;
+			float y;
+			float z;
+		}
+		
+		private static class MD5Mesh {
+			MD5Vertex[] vertices;
+			MD5Tri[] triangles;
+			MD5Weight[] weights;
+		}
+		
+		private static class MD5FinalMesh {
+			Vec[] vertices;
+			Vec[] texCoords;
+			Vec[] normals;
+			
+			public MD5FinalMesh(MD5Mesh mesh, MD5Joint[] joints) {
+				prepareMesh(mesh, joints);
+			}
+			
+			public void prepareMesh(MD5Mesh mesh, MD5Joint[] joints) {
+				vertices = new Vec[mesh.vertices.length];
+				normals = new Vec[mesh.vertices.length];
+				texCoords = new Vec[mesh.vertices.length];
+				for (int i = 0; i < mesh.vertices.length; i++) {
+					Vec finalPos = new Vec(3);
+					MD5Vertex vert = mesh.vertices[i];
+					vertices[i] = new Vec(3);
+					normals[i] = new Vec(3);
+					
+					for (int j = 0; j < vert.weightCount; j++) {
+						MD5Weight weight = mesh.weights[vert.startWeight];
+						if (weight == null || weight.jointID < 0) {
+							continue;
+						}
+						MD5Joint joint = joints[weight.jointID];
+						
+						Vec rotPos = Quat.rotVec(new Vec(weight.x, weight.y, weight.z), joint.q);
+						Vec v;
+						Vec.mult(v = Vec.addVec(new Vec(joint.x, joint.y, joint.z), rotPos), weight.bias);
+						finalPos.add(finalPos, v);
+					}
+					vertices[i] = finalPos;
+					System.out.printf("Added vertex %d: %s\n", i, vertices[i]);
+					texCoords[i] = new Vec(vert.u, vert.v);
+					System.out.printf("Added texUVs %d: %s\n", i, texCoords[i]);
+				}
+			}
+		}
+	}
+	
 	public static void printHEXData(String filename) throws IOException {
 		File file = new File(filename);
 		if (!file.exists()) {
@@ -1009,6 +1271,17 @@ public final class UniModelLoader {
 				System.out.println("END");
 				break;
 			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		try {
+			MD5.loadModel("res/md5/boblampclean.md5mesh");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (UniModelLoaderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
