@@ -271,7 +271,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	}
 
 	public static void main(String[] args) {
-		start("res/OrangeCharacter.obj", null, GL_QUADS);
+		start("res/OrangeCharacterHighRes.obj", null, GL_QUADS);
 	}
 	
 	public static void start(String modelpath, String texturepath, int mode) {

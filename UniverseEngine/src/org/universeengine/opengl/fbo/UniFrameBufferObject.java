@@ -111,6 +111,15 @@ public class UniFrameBufferObject {
 		glPopAttrib();
 	}
 	
+	public void bindAsTexture() {
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+	}
+	
+	public void unbindAsTexture() {
+		glDisable(GL_TEXTURE_2D);
+	}
+	
 	public void destroy() {
 		glDeleteFramebuffersEXT(fboID);
 		glDeleteRenderbuffersEXT(depthBufferID);

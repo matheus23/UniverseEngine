@@ -1,8 +1,26 @@
 package org.universeengine.util.math;
 
+import org.lwjgl.opengl.GL11;
+
 public class Vec {
 	
 	public float[] data;
+	
+	public Vec(float[] vertex1, float[] vertex2) {
+		if (vertex1 == null || vertex2 == null) {
+			throw new NullPointerException("None of the arguments is allowed to be null!");
+		}
+		if (vertex1.length != vertex2.length) {
+			throw new IllegalArgumentException("The given vertices have different dimensions!");
+		}
+		if (vertex1.length > 4 || vertex1.length < 1) {
+			throw new IllegalArgumentException("The given vertices have illegal dimensions");
+		}
+		data = new float[vertex1.length];
+		for (int i = 0; i < vertex1.length; i++) {
+			data[i] = vertex2[i] - vertex1[i];
+		}
+	}
 	
 	public Vec(int size) {
 		if (size > 4 || size < 1) {
@@ -80,6 +98,17 @@ public class Vec {
 	
 	public void w(float w) {
 		data[3] = w;
+	}
+	
+	public void set2D(float x1, float y1, float x2, float y2) {
+		data[0] = x2-x1;
+		data[1] = y2-y1;
+	}
+	
+	public void set3D(float x1, float y1, float z1, float x2, float y2, float z2) {
+		data[0] = x2-x1;
+		data[1] = y2-y1;
+		data[2] = z2-z1;
 	}
 	
 	public void set(float... data) {
@@ -242,6 +271,30 @@ public class Vec {
 				v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0]);
 	}
 	
+	/**
+	 * Renders a OpenGL line, on positions x, y, z.
+	 * if the Vector is 2-dimensional, z can be any value,
+	 * it will be ignored.
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	public void renderGL(float x, float y, float z, float scale) {
+		GL11.glPushMatrix();
+		GL11.glBegin(GL11.GL_LINES);
+		{
+			if (data.length == 2) {
+				GL11.glVertex2f(x, y);
+				GL11.glVertex2f(x+data[0]*scale, y+data[1]*scale);
+			} else if (data.length == 3) {
+				GL11.glVertex3f(x, y, z);
+				GL11.glVertex3f(x+data[0]*scale, y+data[1]*scale, z+data[2]*scale);
+			}
+		}
+		GL11.glEnd();
+		GL11.glPopMatrix();
+	}
+	
 	public static void main(String[] args) {
 		
 		System.out.println("---------------------");
@@ -298,7 +351,9 @@ public class Vec {
 		System.out.println("---------------------");
 		
 		Vec v3 = new Vec(-3f);
+		Vec v4 = new Vec(10f, 10f);
 		System.out.printf("Length of v3 %s: %f\n", v3, v3.length());
+		System.out.printf("Length of v4 %s: %f\n", v4, v4.length());
 		
 	}
 	

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.lwjgl.util.vector.Quaternion;
 import org.universeengine.exceptions.UniGLVersionException;
 import org.universeengine.opengl.model.UniMesh;
 import org.universeengine.opengl.model.UniModel;
@@ -1280,7 +1279,6 @@ public final class UniModelLoader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (UniModelLoaderException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

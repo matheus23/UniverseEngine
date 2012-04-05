@@ -49,11 +49,14 @@ public class UniShader implements UniPrintable {
 			return;
 		}
 		String line;
+		StringBuilder strSource = new StringBuilder();
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(filename));
 			while((line = reader.readLine()) != null) {
-				source += line + "\n";
+				strSource.append(line);
+				strSource.append("\n");
 			}
+			source = strSource.toString();
 		} catch(Exception e) {
 			UniPrint.printerrf(this, "Error while reading %s from %s\n", shaderDesc, filename);
 			e.printStackTrace();
