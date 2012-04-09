@@ -43,6 +43,7 @@ import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
@@ -82,6 +83,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 	private UniStdLight light;
 	private UniStdMaterial mat;
 	private UniShaderProgram prog;
+	private boolean vsync = true;
 
 	public UniverseEngineModelViewer(String modelpath, String texturepath, int mode, boolean start) {
 		this.modelpath = modelpath;
@@ -116,6 +118,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
+		Display.setVSyncEnabled(vsync);
 		
 		input = new UniInput(this);
 		cam = new UniCamera(loop);
@@ -234,6 +237,9 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		} if (key == Keyboard.KEY_F) {
 			wireFrame = !wireFrame;
 			glPolygonMode(GL_FRONT_AND_BACK, wireFrame ? GL_LINE : GL_FILL);
+		} if (key == Keyboard.KEY_V) {
+			vsync = !vsync;
+			Display.setVSyncEnabled(vsync);
 		}
 	}
 
@@ -294,7 +300,6 @@ public class UniverseEngineModelViewer implements UniverseEngineEnterPoint, UniI
 		viewer.setMaterial(mat);
 		
 		viewer.lateStart();
-		
 	}
 
 }

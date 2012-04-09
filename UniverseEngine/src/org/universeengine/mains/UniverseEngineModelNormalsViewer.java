@@ -37,6 +37,7 @@ import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
@@ -80,6 +81,7 @@ public class UniverseEngineModelNormalsViewer implements UniverseEngineEnterPoin
 	}
 	
 	public void start() {
+		Display.setVSyncEnabled(false);
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
@@ -178,6 +180,7 @@ public class UniverseEngineModelNormalsViewer implements UniverseEngineEnterPoin
 		if (key == Keyboard.KEY_L) {
 			limitFPS = !limitFPS;
 			loop.setDelay(limitFPS);
+			System.out.println(limitFPS ? "enabled" : "disabled" + " fps Limiting.");
 		} if (key == Keyboard.KEY_G){
 			Mouse.setGrabbed(!Mouse.isGrabbed());
 		} if (key == Keyboard.KEY_F) {

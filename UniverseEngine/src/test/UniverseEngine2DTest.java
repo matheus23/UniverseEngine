@@ -30,6 +30,7 @@ import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
@@ -56,8 +57,10 @@ public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
 	public void start() {
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
+		Display.setVSyncEnabled(false);
 		
 		loop.setDelay(false);
+		loop.setFrameRecalculationFrames(1000);
 		
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glMatrixMode(GL_PROJECTION);

@@ -163,10 +163,10 @@ public class UniInterleavedVBORenderer extends UniMeshRenderer {
 	}
 
 	public void render(int mode) {
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		if (vertices != null) glEnableClientState(GL_VERTEX_ARRAY);
+		if (normals != null) glEnableClientState(GL_NORMAL_ARRAY);
+		if (colors != null) glEnableClientState(GL_COLOR_ARRAY);
+		if (texCoords != null) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		
 		bindVBO();
 		
@@ -182,10 +182,10 @@ public class UniInterleavedVBORenderer extends UniMeshRenderer {
 			glDrawArrays(mode, 0, vertices.length);
 		}
 		
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisableClientState(GL_COLOR_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		if (vertices != null) glDisableClientState(GL_VERTEX_ARRAY);
+		if (normals != null) glDisableClientState(GL_NORMAL_ARRAY);
+		if (colors != null) glDisableClientState(GL_COLOR_ARRAY);
+		if (texCoords != null) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 
 	private int createID() {

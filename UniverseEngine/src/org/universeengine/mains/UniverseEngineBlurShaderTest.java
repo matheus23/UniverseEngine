@@ -1,57 +1,14 @@
 package org.universeengine.mains;
 
-import static org.lwjgl.opengl.GL11.GL_BACK;
-import static org.lwjgl.opengl.GL11.GL_BLEND;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_FILL;
-import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
-import static org.lwjgl.opengl.GL11.GL_LIGHTING;
-import static org.lwjgl.opengl.GL11.GL_LIGHT_MODEL_LOCAL_VIEWER;
-import static org.lwjgl.opengl.GL11.GL_LINE;
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_LINE_SMOOTH_HINT;
-import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_NICEST;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
-import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_SMOOTH;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glBlendFunc;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glColor4f;
-import static org.lwjgl.opengl.GL11.glCullFace;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glHint;
-import static org.lwjgl.opengl.GL11.glLightModeli;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glPolygonMode;
-import static org.lwjgl.opengl.GL11.glRotatef;
-import static org.lwjgl.opengl.GL11.glShadeModel;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-import static org.lwjgl.opengl.GL11.glVertex3f;
-import static org.lwjgl.opengl.GL11.glViewport;
-import static org.lwjgl.util.glu.GLU.gluPerspective;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL13.*;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 import org.universeengine.UniverseEngineEnterPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
@@ -64,6 +21,9 @@ import org.universeengine.opengl.model.UniModel;
 import org.universeengine.opengl.model.modelloader.UniModelLoader;
 import org.universeengine.opengl.model.modelloader.UniModelLoaderException;
 import org.universeengine.opengl.model.renderer.UniStandardRenderer;
+import org.universeengine.opengl.shader.UniShader;
+import org.universeengine.opengl.shader.UniShaderProgram;
+import org.universeengine.opengl.shader.UniUniform;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
 import org.universeengine.opengl.vertex.UniColor3f;
@@ -74,10 +34,10 @@ import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
-public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInputListener {
+public class UniverseEngineBlurShaderTest implements UniverseEngineEnterPoint, UniInputListener {
 	
-	public static final int FBO_WIDTH = 1024;
-	public static final int FBO_HEIGHT = 1024;
+	public static final int FBO_WIDTH = 800;
+	public static final int FBO_HEIGHT = 600;
 
 	private UniLoop loop;
 	private UniAWTDisplay display;
@@ -95,10 +55,12 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	private UniStdLight light;
 	private UniStdMaterial mat;
 	private UniFrameBufferObject fbo;
-	private float angle;
-	private boolean vsync = true;
+	private boolean blurEnabled = false;
+	private UniShaderProgram blurShader;
+	private UniUniform uniformTexture;
+	private UniUniform uniformShift;
 
-	public UniverseEngineFBOTest(String modelpath, String texturepath, int mode, boolean start) {
+	public UniverseEngineBlurShaderTest(String modelpath, String texturepath, int mode, boolean start) {
 		this.modelpath = modelpath;
 		this.texturepath = texturepath;
 		this.mode = mode;
@@ -126,7 +88,6 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
-		Display.setVSyncEnabled(vsync);
 		
 		input = new UniInput(this);
 		cam = new UniCamera(loop);
@@ -150,9 +111,9 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		setupOriginLines();
 		
 		try {
-			if (modelpath.contains(".uem"))
+			if (modelpath.endsWith(".uem"))
 				model = UniModelLoader.UEM.load(modelpath);
-			if (modelpath.contains(".obj"))
+			if (modelpath.endsWith(".obj"))
 				model = UniModelLoader.OBJ.load(modelpath);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -168,6 +129,11 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 			UniPrint.printerrf("FBO not supported!\n");
 			e.printStackTrace();
 		}
+		blurShader = new UniShaderProgram(
+				new UniShader("shaders/blur.vert", UniShader.VERTEX_SHADER),
+				new UniShader("shaders/blur.frag", UniShader.FRAGMENT_SHADER));
+		uniformTexture = new UniUniform("texture", blurShader);
+		uniformShift = new UniUniform("shift", blurShader);
 	}
 
 	public void tick() {
@@ -183,24 +149,23 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		renderFBO();
 
 		// Real render pass:
-		renderCube();
+		renderFromFBO();
 	}
 	
 	public void renderFBO() {
 		// Bind FBO:
 		fbo.bind(false, 50f, 0.1f, 64f);
-		glClearColor(0f, 0.2f, 0.4f, 0f);
 		// Render into FBO:
+		glClearColor(0.3f, 0.5f, 0.8f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
+		
 		if (!wireFrame) {
-			glColor4f(1f, 1f, 1f, 1f);
+			glColor3f(1f, 1f, 1f);
 		} else {
-			glColor4f(1f, 0.5f, 0f, 1f);
+			glColor3f(1f, 0.5f, 0f);
 		}
-		glTranslatef(0f, 0f, -12f);
-		glRotatef(angle, 0f, 1f, 0f);
-		angle += 1f;
+		cam.apply();
 		
 		if (light != null) {
 			glEnable(GL_LIGHTING);
@@ -208,7 +173,10 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		}
 		
 		if (tex != null) tex.bind();
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		model.render(mode);
+		glDisable(GL_BLEND);
 		if (tex != null) tex.unbind();
 
 		if (light != null) {
@@ -222,64 +190,69 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		fbo.unbind();
 	}
 	
-	public void renderCube() {
+	public void renderFromFBO() {
+		float w = display.getWidth();
+		float h = display.getHeight();
+		
+		setUpViewport(display.getWidth(), display.getHeight());
+		
 		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		setUpViewport(loop.display.getWidth(), loop.display.getHeight());
-		if (!wireFrame) {
-			glColor4f(1f, 1f, 1f, 1f);
-		} else {
-			glColor4f(1f, 0.5f, 0f, 1f);
-		}
-		cam.apply();
 		
-		glDisable(GL_BLEND);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, fbo.getTextureID());
-		drawBox();
-		glDisable(GL_TEXTURE_2D);
-		glEnable(GL_BLEND);
-
 		glDisable(GL_DEPTH_TEST);
-		linesDL.render();
+		if (blurEnabled) {
+			glActiveTexture(GL_TEXTURE0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+			glColor4f(1f, 1f, 1f, 1f);
+			blurShader.use();
+			uniformTexture.uniform1i(0);
+			uniformShift.uniform2f(1.4f/w, 0f);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, fbo.getTextureID());
+			glBegin(GL_QUADS);
+			{
+				glMultiTexCoord2f(GL_TEXTURE0, 0f, 0f); glVertex2f(0f, 0f);
+				glMultiTexCoord2f(GL_TEXTURE0, 1f, 0f); glVertex2f( w, 0f);
+				glMultiTexCoord2f(GL_TEXTURE0, 1f, 1f); glVertex2f( w,  h);
+				glMultiTexCoord2f(GL_TEXTURE0, 0f, 1f); glVertex2f(0f,  h);
+			}
+			glEnd();
+			
+			glColor4f(1f, 1f, 1f, 0.5f);
+			uniformTexture.uniform1i(0);
+			uniformShift.uniform2f(0f, 1.4f/h);
+			glBegin(GL_QUADS);
+			{
+				glMultiTexCoord2f(GL_TEXTURE0, 0f, 0f); glVertex2f(0f, 0f);
+				glMultiTexCoord2f(GL_TEXTURE0, 1f, 0f); glVertex2f( w, 0f);
+				glMultiTexCoord2f(GL_TEXTURE0, 1f, 1f); glVertex2f( w,  h);
+				glMultiTexCoord2f(GL_TEXTURE0, 0f, 1f); glVertex2f(0f,  h);
+			}
+			glEnd();
+			glDisable(GL_TEXTURE_2D);
+			blurShader.unuse();
+			glDisable(GL_BLEND);
+		} else {
+			glDisable(GL_BLEND);
+			glColor4f(1f, 1f, 1f, 1f);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, fbo.getTextureID());
+			glBegin(GL_QUADS);
+			{
+				glMultiTexCoord2f(GL_TEXTURE0, 0f, 0f); glVertex2f(0f, 0f);
+				glMultiTexCoord2f(GL_TEXTURE0, 1f, 0f); glVertex2f( w, 0f);
+				glMultiTexCoord2f(GL_TEXTURE0, 1f, 1f); glVertex2f( w,  h);
+				glMultiTexCoord2f(GL_TEXTURE0, 0f, 1f); glVertex2f(0f,  h);
+			}
+			glEnd();
+			glDisable(GL_TEXTURE_2D);
+		}
 		glEnable(GL_DEPTH_TEST);
-	}
-
-	public void drawBox() {
-		// this func just draws a perfectly normal box with some texture coordinates
-		glBegin(GL_QUADS);
-		// Front Face
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);  // Top Left Of The Texture and Quad
-		// Back Face
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);  // Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);  // Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);  // Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);  // Bottom Left Of The Texture and Quad
-		// Top Face
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);  // Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,  1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);  // Top Right Of The Texture and Quad
-		// Bottom Face
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);  // Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f, -1.0f, -1.0f);  // Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
-		// Right face
-		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);  // Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);  // Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
-		// Left Face
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);  // Bottom Left Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);  // Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);  // Top Left Of The Texture and Quad
-		glEnd();
 	}
 
 	public void pause() {
@@ -324,17 +297,17 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 		} if (key == Keyboard.KEY_F) {
 			wireFrame = !wireFrame;
 			glPolygonMode(GL_FRONT_AND_BACK, wireFrame ? GL_LINE : GL_FILL);
-		} if (key == Keyboard.KEY_V) {
-			vsync = !vsync;
-			Display.setVSyncEnabled(vsync);
+		} if (key == Keyboard.KEY_B) {
+			blurEnabled = !blurEnabled;
 		}
 	}
 
 	public void setUpViewport(int width, int height) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(50f, ((float)width) / ((float)height), 0.1f, 64f);
 		glViewport(0, 0, width, height);
+//		gluPerspective(50f, ((float)width) / ((float)height), 0.1f, 64f);
+		glOrtho(0, width, 0, height, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 	}
 	
@@ -369,8 +342,8 @@ public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInput
 	
 	public static void start(String modelpath, String texturepath, int mode) {
 		UniPrint.enabled = true;
-		UniverseEngineFBOTest viewer = 
-				new UniverseEngineFBOTest(modelpath, texturepath, mode, false);
+		UniverseEngineBlurShaderTest viewer = 
+				new UniverseEngineBlurShaderTest(modelpath, texturepath, mode, false);
 		
 		UniStdLight light = new UniStdLight(0, 4f, 4f, 4f, 1f);
 		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);

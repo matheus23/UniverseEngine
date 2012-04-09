@@ -131,6 +131,10 @@ public class UniLoop implements UniPrintable {
 		}
 	}
 	
+	public void setFrameRecalculationFrames(long frames) {
+		delayHandler.setFpsCalcDelay(frames);
+	}
+	
 	/**
 	 * @return the last updated fps.
 	 */
