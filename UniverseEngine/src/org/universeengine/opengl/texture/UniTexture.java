@@ -47,20 +47,20 @@ public class UniTexture {
 	 * Binds the Texture with OpenGL Calls.
 	 * Now the Texture will automatically be used
 	 * with glTexCoord calls.
+	 * glEnable(GL_TEXTURE_2D); must be called
+	 * in initialization code before.
+	 * (Although it is enabled by default)
 	 */
 	public void bind() {
-		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, texID);
 	}
 	
 	/**
 	 * Preferred Way to unbind Textures.
-	 * Calls glDisable(GL_TEXTURE_2D);
-	 * You don't have to call glEnable before
-	 * bind() the next time.
+	 * use bind() to bind again.
 	 */
 	public void unbind() {
-		glDisable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
 }

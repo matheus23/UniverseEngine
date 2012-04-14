@@ -5,6 +5,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -19,8 +20,7 @@ import org.universeengine.util.UniPrint;
 public final class UniTextureLoader {
 
 	/**
-	 * Load a Texture from the given Filepath. Equals
-	 * loadTexture(loadBufferedImage(filepath));
+	 * Load a Texture from the given Filepath.
 	 * 
 	 * @param filepath
 	 *            the Filepath to load the Texture data from.
@@ -48,6 +48,42 @@ public final class UniTextureLoader {
 		try {
 			Texture slickTex = TextureLoader.getTexture(format,
 					ResourceLoader.getResourceAsStream(filepath), true);
+			tex = new UniTexture(slickTex.getTextureID(),
+					slickTex.getTextureWidth(), slickTex.getTextureHeight());
+		} catch (IOException e) {
+		}
+		return tex;
+	}
+
+	/**
+	 * Load a Texture from the given Filepath. Equals
+	 * loadTexture(loadBufferedImage(filepath));
+	 * 
+	 * @param filepath
+	 *            the Filepath to load the Texture data from.
+	 * @return the UniTexture Instance.
+	 */
+	public static UniTexture loadTexture(File file) {
+		String format = "";
+		UniTexture tex = null;
+		StringTokenizer st = new StringTokenizer(file.getName(), ".");
+		while(st.hasMoreElements()) {
+			format = st.nextToken();
+		}
+		String[] strs = ImageIO.getReaderFormatNames();
+		boolean okey = false;
+		for (int i = 0; i < strs.length; i++) {
+			if (format.equalsIgnoreCase(strs[i])) {
+				okey = true;
+				break;
+			}
+		}
+		if (!okey) {
+			UniPrint.printerrf("The File format .%s for loading Texture is not supported!\n", 
+					format);
+		}
+		try {
+			Texture slickTex = TextureLoader.getTexture(format, new FileInputStream(file), true);
 			tex = new UniTexture(slickTex.getTextureID(),
 					slickTex.getTextureWidth(), slickTex.getTextureHeight());
 		} catch (IOException e) {
