@@ -18,6 +18,8 @@ import org.newdawn.slick.util.ResourceLoader;
 import org.universeengine.util.UniPrint;
 
 public final class UniTextureLoader {
+	
+	public static boolean flipImages = true;
 
 	/**
 	 * Load a Texture from the given Filepath.
@@ -47,7 +49,7 @@ public final class UniTextureLoader {
 		}
 		try {
 			Texture slickTex = TextureLoader.getTexture(format,
-					ResourceLoader.getResourceAsStream(filepath), true);
+					ResourceLoader.getResourceAsStream(filepath), flipImages);
 			tex = new UniTexture(slickTex.getTextureID(),
 					slickTex.getTextureWidth(), slickTex.getTextureHeight());
 		} catch (IOException e) {
@@ -83,7 +85,7 @@ public final class UniTextureLoader {
 					format);
 		}
 		try {
-			Texture slickTex = TextureLoader.getTexture(format, new FileInputStream(file), true);
+			Texture slickTex = TextureLoader.getTexture(format, new FileInputStream(file), flipImages);
 			tex = new UniTexture(slickTex.getTextureID(),
 					slickTex.getTextureWidth(), slickTex.getTextureHeight());
 		} catch (IOException e) {
