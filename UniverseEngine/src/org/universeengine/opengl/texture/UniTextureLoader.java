@@ -41,11 +41,11 @@ public final class UniTextureLoader {
 	
 	public static boolean flipImages = true;
 	
-	public static UniTexture loadTexturePNG(String filepath) {
-		return loadTexturePNG(new File(filepath));
+	public static UniTexture loadTexturePNG(String filepath, boolean minlinear, boolean maglinear) {
+		return loadTexturePNG(new File(filepath), minlinear, maglinear);
 	}
 	
-	public static UniTexture loadTexturePNG(File file) {
+	public static UniTexture loadTexturePNG(File file, boolean minlinear, boolean maglinear) {
 		DecodePack pack = loadImageBufferPNG(file);
 		UniTexture tex = null;
 		
@@ -65,6 +65,8 @@ public final class UniTextureLoader {
 		
 		int id = glGenTextures();
 		glBindTexture(GL_TEXTURE_2D, id);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minlinear ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maglinear ? GL_LINEAR : GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, height, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
 		tex = new UniTexture(id, width, height);
 		
