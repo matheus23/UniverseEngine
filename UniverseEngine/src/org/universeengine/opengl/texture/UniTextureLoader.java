@@ -64,6 +64,7 @@ public final class UniTextureLoader {
 		}
 		
 		int id = glGenTextures();
+		glBindTexture(GL_TEXTURE_2D, id);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, height, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
 		tex = new UniTexture(id, width, height);
 		
