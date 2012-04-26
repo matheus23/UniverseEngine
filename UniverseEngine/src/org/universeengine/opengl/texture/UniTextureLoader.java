@@ -7,6 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
@@ -17,9 +19,76 @@ import org.newdawn.slick.util.BufferedImageUtil;
 import org.newdawn.slick.util.ResourceLoader;
 import org.universeengine.util.UniPrint;
 
+import de.matthiasmann.twl.utils.PNGDecoder;
+import de.matthiasmann.twl.utils.PNGDecoder.Format;
+
+import static org.lwjgl.opengl.GL11.*;
+
 public final class UniTextureLoader {
 	
+	public static class DecodePack {
+		
+		public ByteBuffer data;
+		public int width;
+		public int height;
+		
+		public DecodePack(ByteBuffer data, int width, int height) {
+			this.data = data;
+			this.width = width;
+			this.height = height;
+		}
+	}
+	
 	public static boolean flipImages = true;
+	
+	public static UniTexture loadTexturePNG(String filepath) {
+		return loadTexturePNG(new File(filepath));
+	}
+	
+	public static UniTexture loadTexturePNG(File file) {
+		DecodePack pack = loadImageBufferPNG(file);
+		UniTexture tex = null;
+		
+		if (pack == null) {
+			throw new RuntimeException("Texture from " + file.getAbsolutePath() + " could not be loaded!");
+		}
+		
+		int width = 1;
+		int height = 1;
+		
+		while(width < pack.width) {
+			width *= 2;
+		}
+		while(height < pack.height) {
+			height *= 2;
+		}
+		
+		int id = glGenTextures();
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, height, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
+		tex = new UniTexture(id, width, height);
+		
+		return tex;
+	}
+	
+	public static DecodePack loadImageBufferPNG(File file) {
+		DecodePack data = null;
+		try {
+			InputStream input = new FileInputStream(file);
+			try {
+				PNGDecoder decoder = new PNGDecoder(input);
+				
+				ByteBuffer bufData = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
+				decoder.decode(bufData, decoder.getWidth()*4, Format.RGBA);
+				bufData.flip();
+				data = new DecodePack(bufData, decoder.getWidth(), decoder.getHeight());
+			} finally {
+				input.close();
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return data;
+	}
 
 	/**
 	 * Load a Texture from the given Filepath.
@@ -132,5 +201,5 @@ public final class UniTextureLoader {
 		}
 		return copy;
 	}
-
+	
 }
