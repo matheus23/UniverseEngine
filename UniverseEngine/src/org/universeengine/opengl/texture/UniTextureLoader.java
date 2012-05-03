@@ -45,6 +45,34 @@ public final class UniTextureLoader {
 		return loadTexturePNG(new File(filepath), minlinear, maglinear);
 	}
 	
+	public static UniTexture loadTexturePNG(InputStream stream, boolean minlinear, boolean maglinear) {
+		DecodePack pack = loadImageBufferPNG(stream);
+		UniTexture tex = null;
+		
+		if (pack == null) {
+			throw new RuntimeException("Texture could not be loaded!");
+		}
+		
+		int width = 1;
+		int height = 1;
+		
+		while(width < pack.width) {
+			width *= 2;
+		}
+		while(height < pack.height) {
+			height *= 2;
+		}
+		
+		int id = glGenTextures();
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minlinear ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maglinear ? GL_LINEAR : GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, height, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
+		tex = new UniTexture(id, width, height);
+		
+		return tex;
+	}
+	
 	public static UniTexture loadTexturePNG(File file, boolean minlinear, boolean maglinear) {
 		DecodePack pack = loadImageBufferPNG(file);
 		UniTexture tex = null;
@@ -71,6 +99,25 @@ public final class UniTextureLoader {
 		tex = new UniTexture(id, width, height);
 		
 		return tex;
+	}
+	
+	public static DecodePack loadImageBufferPNG(InputStream input) {
+		DecodePack data = null;
+		try {
+			try {
+				PNGDecoder decoder = new PNGDecoder(input);
+				
+				ByteBuffer bufData = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
+				decoder.decode(bufData, decoder.getWidth()*4, Format.RGBA);
+				bufData.flip();
+				data = new DecodePack(bufData, decoder.getWidth(), decoder.getHeight());
+			} finally {
+				input.close();
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return data;
 	}
 	
 	public static DecodePack loadImageBufferPNG(File file) {
