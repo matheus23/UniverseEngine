@@ -199,6 +199,20 @@ public class UniAWTDisplay implements UniPrintable, UniDisplay {
 	}
 	
 	/**
+	 * @return the internally used AWT Frame
+	 */
+	public Frame getFrame() {
+		return frame;
+	}
+	
+	/**
+	 * @return the internally used AWT Canvas
+	 */
+	public Canvas getCanvas() {
+		return canvas;
+	}
+	
+	/**
 	 * Do not call (does nothing bad ^^)
 	 * This is only for printing via UniPrint
 	 * (Inherited from UniPrintable)
