@@ -70,7 +70,7 @@ public class UniTexture {
 	 * to 0. When bound again, the current
 	 * texture will be unbound.
 	 */
-	public void destroy() {
+	public void delete() {
 		glDeleteTextures(texID);
 		texID = 0;
 	}
