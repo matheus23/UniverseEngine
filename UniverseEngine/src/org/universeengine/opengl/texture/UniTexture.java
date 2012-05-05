@@ -63,4 +63,16 @@ public class UniTexture {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
+	/**
+	 * Remove this texture object from
+	 * VRAM.
+	 * Automatically sets the textureID
+	 * to 0. When bound again, the current
+	 * texture will be unbound.
+	 */
+	public void destroy() {
+		glDeleteTextures(texID);
+		texID = 0;
+	}
+	
 }
