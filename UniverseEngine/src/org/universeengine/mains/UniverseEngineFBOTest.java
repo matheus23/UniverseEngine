@@ -52,7 +52,7 @@ import java.io.IOException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import org.universeengine.UniverseEngineEnterPoint;
+import org.universeengine.UniverseEngineEntryPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
 import org.universeengine.exceptions.UniGLVersionException;
@@ -74,7 +74,7 @@ import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
-public class UniverseEngineFBOTest implements UniverseEngineEnterPoint, UniInputListener {
+public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInputListener {
 	
 	public static final int FBO_WIDTH = 1024;
 	public static final int FBO_HEIGHT = 1024;

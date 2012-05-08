@@ -19,7 +19,7 @@ import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Sys;
-import org.universeengine.UniverseEngineEnterPoint;
+import org.universeengine.UniverseEngineEntryPoint;
 import org.universeengine.util.UniPrint;
 import org.universeengine.util.UniPrintable;
 
@@ -33,7 +33,7 @@ public class UniLoop implements UniPrintable {
 	private boolean forceExit = false;
 	private boolean delay = true;
 	private boolean saving = false;
-	private UniverseEngineEnterPoint enterPoint;
+	private UniverseEngineEntryPoint enterPoint;
 	private DelayHandler delayHandler;
 	public UniDisplay display;
 
@@ -44,7 +44,7 @@ public class UniLoop implements UniPrintable {
 	 * This is not allowed to be null!
 	 * @param display the UniDisplay you should have created before.
 	 */
-	public UniLoop(UniverseEngineEnterPoint enterPoint, UniDisplay display) {
+	public UniLoop(UniverseEngineEntryPoint enterPoint, UniDisplay display) {
 		this.enterPoint = enterPoint;
 		this.display = display;
 	}

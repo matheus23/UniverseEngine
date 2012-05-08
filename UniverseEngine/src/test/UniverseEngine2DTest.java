@@ -31,13 +31,13 @@ import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import org.universeengine.UniverseEngineEnterPoint;
+import org.universeengine.UniverseEngineEntryPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
 import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
 
-public class UniverseEngine2DTest implements UniverseEngineEnterPoint {
+public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 	
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 600;

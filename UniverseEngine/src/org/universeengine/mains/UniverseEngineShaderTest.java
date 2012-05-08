@@ -37,7 +37,7 @@ import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.universeengine.UniverseEngineEnterPoint;
+import org.universeengine.UniverseEngineEntryPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
 import org.universeengine.mains.shadertests.UniShaderTestUniform;
@@ -56,7 +56,7 @@ import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
-public class UniverseEngineShaderTest implements UniverseEngineEnterPoint, UniInputListener {
+public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniInputListener {
 
 	private UniLoop loop;
 	private UniAWTDisplay display;

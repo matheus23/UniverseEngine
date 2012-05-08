@@ -1,6 +1,6 @@
 package org.universeengine;
 
-public interface UniverseEngineEnterPoint {
+public interface UniverseEngineEntryPoint {
 	
 	public void start();
 	
