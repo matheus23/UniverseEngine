@@ -108,7 +108,6 @@ public class UniLoop implements UniPrintable {
 			if (display instanceof UniAWTDisplay) {
 				UniAWTDisplay awtdisplay = (UniAWTDisplay) display;
 				boolean maximized = awtdisplay.isMaximized();
-				System.out.println("Frame is " + (maximized ? "" : "not ") + "maximized");
 				if (maximized) {
 					bpp = 4;
 				}
