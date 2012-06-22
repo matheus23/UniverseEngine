@@ -112,7 +112,7 @@ public final class UniTextureLoader {
 				bufData.flip();
 				data = new DecodePack(bufData, decoder.getWidth(), decoder.getHeight());
 			} finally {
-				input.close();
+				if (input != null) input.close();
 			}
 		} catch(IOException e) {
 			e.printStackTrace();
