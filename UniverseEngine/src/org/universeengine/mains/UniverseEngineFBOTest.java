@@ -389,4 +389,8 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		viewer.lateStart();
 	}
 
+	public void displayUpdate() {
+		Display.update();
+	}
+
 }

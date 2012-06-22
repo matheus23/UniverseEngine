@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.universeengine.UniverseEngineEntryPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
@@ -360,6 +361,10 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		viewer.setMaterial(mat);
 		
 		viewer.lateStart();
+	}
+
+	public void displayUpdate() {
+		Display.update();
 	}
 
 }

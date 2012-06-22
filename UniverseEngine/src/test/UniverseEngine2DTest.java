@@ -155,5 +155,9 @@ public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 	public static void main(String[] args) {
 		new UniverseEngine2DTest();
 	}
+
+	public void displayUpdate() {
+		Display.update();
+	}
 	
 }

@@ -37,6 +37,7 @@ import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.universeengine.UniverseEngineEntryPoint;
 import org.universeengine.display.UniAWTDisplay;
 import org.universeengine.display.UniLoop;
@@ -232,6 +233,10 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 	public static void start(String modelLoc, int mode, UniShaderTestUniform uniformer) {
 		UniPrint.enabled = true;
 		new UniverseEngineShaderTest(modelLoc, mode, uniformer);
+	}
+
+	public void displayUpdate() {
+		Display.update();
 	}
 
 }

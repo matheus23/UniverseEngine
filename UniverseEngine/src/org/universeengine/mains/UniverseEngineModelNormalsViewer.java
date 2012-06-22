@@ -231,4 +231,8 @@ public class UniverseEngineModelNormalsViewer implements UniverseEngineEntryPoin
 		new UniverseEngineModelNormalsViewer(modelpath, mode);
 	}
 
+	public void displayUpdate() {
+		Display.update();
+	}
+
 }

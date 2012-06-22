@@ -75,7 +75,7 @@ public class UniLoop implements UniPrintable {
 				onResize(oldw, oldh);
 				tick();
 				render();
-				display.update();
+				enterPoint.displayUpdate();
 				running = !(display.isCloseRequested()
 						| delayHandler.update(delay));
 				if (forceExit) break;

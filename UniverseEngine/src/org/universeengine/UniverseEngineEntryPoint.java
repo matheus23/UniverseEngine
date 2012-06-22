@@ -7,6 +7,8 @@ public interface UniverseEngineEntryPoint {
 	public void tick();
 	public void render();
 	
+	public void displayUpdate();
+	
 	public void pause();
 	public void resume();
 	

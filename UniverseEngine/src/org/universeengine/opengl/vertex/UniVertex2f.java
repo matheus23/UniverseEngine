@@ -12,7 +12,7 @@ public class UniVertex2f implements UniElement, UniPrintable {
 	
 	private float[] vert;
 	
-	public UniVertex2f(float x, float y, float z) {
+	public UniVertex2f(float x, float y) {
 		set(x, y);
 	}
 	

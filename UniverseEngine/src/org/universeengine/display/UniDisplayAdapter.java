@@ -83,5 +83,23 @@ public class UniDisplayAdapter implements UniDisplay {
 	public void setLocation(int x, int y) {
 		Display.setLocation(x, y);
 	}
+	
+	public void setFullscreen(int width, int height, boolean fullscreen) {
+		try {
+			DisplayMode toTake = null;
+			DisplayMode[] modes = Display.getAvailableDisplayModes();
+			for (int i = 0; i < modes.length; i++) {
+				if (modes[i].getWidth() < width || modes[i].getHeight() < height) {
+					continue;
+				}
+				toTake = modes[i];
+			}
+			if (toTake != null) {
+				Display.setDisplayModeAndFullscreen(toTake);
+			}
+		} catch (LWJGLException e) {
+			e.printStackTrace();
+		}
+	}
 
 }

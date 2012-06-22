@@ -20,5 +20,6 @@ public interface UniDisplay {
 	public void setLocation(int x, int y);
 	public void update();
 	public void destroy();
+	public void setFullscreen(int width, int height, boolean fullscreen);
 
 }

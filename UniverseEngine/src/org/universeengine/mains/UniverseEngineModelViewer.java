@@ -66,11 +66,13 @@ import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
 public class UniverseEngineModelViewer implements UniverseEngineEntryPoint, UniInputListener {
+	
+	public static final float NORM_FOV = 100f;
 
 	private UniLoop loop;
 	private UniAWTDisplay display;
 	private UniMesh originLines;
-	private boolean limitFPS = true;
+	private boolean limitFPS = false;
 	private UniInput input;
 	private UniCamera cam;
 	private UniModel model;
@@ -84,6 +86,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEntryPoint, UniI
 	private UniStdMaterial mat;
 	private UniShaderProgram prog;
 	private boolean vsync = true;
+	private float fov = NORM_FOV;
 
 	public UniverseEngineModelViewer(String modelpath, String texturepath, int mode, boolean start) {
 		this.modelpath = modelpath;
@@ -119,6 +122,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEntryPoint, UniI
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
 		Display.setVSyncEnabled(vsync);
+		loop.setDelay(limitFPS);
 		
 		input = new UniInput(this);
 		cam = new UniCamera(loop);
@@ -226,6 +230,21 @@ public class UniverseEngineModelViewer implements UniverseEngineEntryPoint, UniI
 			
 			loop.saveScreenshot(screenpath);
 		}
+		if (key == Keyboard.KEY_I) {
+			fov += 2f;
+			setUpViewport(display.getWidth(), display.getHeight());
+			System.out.println("Setting fov to " + fov);
+		}
+		if (key == Keyboard.KEY_K) {
+			fov -= 2f;
+			setUpViewport(display.getWidth(), display.getHeight());
+			System.out.println("Setting fov to " + fov);
+		}
+		if (key == Keyboard.KEY_L) {
+			fov = NORM_FOV;
+			setUpViewport(display.getWidth(), display.getHeight());
+			System.out.println("Setting fov to " + fov);
+		}
 	}
 	
 	public void keyReleased(int key) {
@@ -246,7 +265,7 @@ public class UniverseEngineModelViewer implements UniverseEngineEntryPoint, UniI
 	public void setUpViewport(int width, int height) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(50f, ((float)width) / ((float)height), 0.01f, 64f);
+		gluPerspective(fov, ((float)width) / ((float)height), 0.01f, 64f);
 		glViewport(0, 0, width, height);
 		glMatrixMode(GL_MODELVIEW);
 	}
@@ -300,6 +319,10 @@ public class UniverseEngineModelViewer implements UniverseEngineEntryPoint, UniI
 		viewer.setMaterial(mat);
 		
 		viewer.lateStart();
+	}
+
+	public void displayUpdate() {
+		Display.update();
 	}
 
 }

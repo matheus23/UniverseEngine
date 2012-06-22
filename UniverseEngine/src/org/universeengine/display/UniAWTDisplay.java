@@ -248,6 +248,24 @@ public class UniAWTDisplay implements UniPrintable, UniDisplay {
 	public Point getWindowPos() {
 		return frame.getLocation();
 	}
+	
+	public void setFullscreen(int width, int height, boolean fullscreen) {
+		try {
+			org.lwjgl.opengl.DisplayMode toTake = null;
+			org.lwjgl.opengl.DisplayMode[] modes = Display.getAvailableDisplayModes();
+			for (int i = 0; i < modes.length; i++) {
+				if (modes[i].getWidth() < width || modes[i].getHeight() < height) {
+					continue;
+				}
+				toTake = modes[i];
+			}
+			if (toTake != null) {
+				Display.setDisplayModeAndFullscreen(toTake);
+			}
+		} catch (LWJGLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * Sets the caption to the given String.
