@@ -66,7 +66,7 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 	private UniInput input;
 	private UniCamera cam;
 	private UniModel model;
-	private UniDisplayList linesDL; 
+	private UniDisplayList linesDL;
 	private String modelpath;
 	private boolean wireFrame = false;
 	private int mode;
@@ -82,15 +82,16 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		loop = new UniLoop(this, display);
 		loop.start();
 	}
-	
+
+	@Override
 	public void start() {
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
-		
+
 		input = new UniInput(this);
 		cam = new UniCamera(loop);
-		
+
 		setUpViewport(loop.display.getSize().width, loop.display.getSize().height);
 		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -103,7 +104,7 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		glCullFace(GL_BACK);
 
 		setupOriginLines();
-		
+
 		try {
 			if (modelpath.contains(".uem"))
 				model = UniModelLoader.UEM.load(modelpath);
@@ -114,13 +115,14 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		} catch (UniModelLoaderException e) {
 			e.printStackTrace();
 		}
-		
+
 		UniShader vert = new UniShader("vertex_shader.vert", UniShader.VERTEX_SHADER);
 		UniShader frag = new UniShader("fragment_shader.frag", UniShader.FRAGMENT_SHADER);
 		prog = new UniShaderProgram(vert, frag);
 		uniformer.init(prog, vert, frag);
 	}
 
+	@Override
 	public void tick() {
 		input.update();
 		cam.update();
@@ -129,6 +131,7 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		}
 	}
 
+	@Override
 	public void render() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
@@ -138,7 +141,7 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 			glColor4f(1f, 0.5f, 0f, 1f);
 		}
 		cam.apply();
-		
+
 		prog.use();
 		uniformer.uniformAction();
 		model.render(mode);
@@ -149,19 +152,24 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		glEnable(GL_DEPTH_TEST);
 	}
 
+	@Override
 	public void pause() {
 	}
 
+	@Override
 	public void resume() {
 	}
 
+	@Override
 	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight) {
 		setUpViewport(newWidth, newHeight);
 	}
 
+	@Override
 	public void end() {
 	}
-	
+
+	@Override
 	public void keyPressed(int key) {
 		if (key == Keyboard.KEY_F2) {
 			String screenname = "screenshots/screenshot";
@@ -169,17 +177,18 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 			String screenpath = null;
 			int i = 0;
 			File f = new File(screenname + i + imageformat);
-			
+
 			do {
 				f = new File(screenname + i + imageformat);
 				screenpath = screenname + i + imageformat;
 				i++;
 			} while(f.exists());
-			
+
 			loop.saveScreenshot(screenpath);
 		}
 	}
-	
+
+	@Override
 	public void keyReleased(int key) {
 		if (key == Keyboard.KEY_L) {
 			limitFPS = !limitFPS;
@@ -199,7 +208,7 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		glViewport(0, 0, width, height);
 		glMatrixMode(GL_MODELVIEW);
 	}
-	
+
 	private void setupOriginLines() {
 		UniVertex3f[] v = new UniVertex3f[6];
 		v[0] = new UniVertex3f(0f, 0f, 0f);
@@ -208,7 +217,7 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		v[3] = new UniVertex3f(0f, 1f, 0f);
 		v[4] = new UniVertex3f(0f, 0f, 0f);
 		v[5] = new UniVertex3f(0f, 0f, 1f);
-		
+
 		UniColor3f[] c = new UniColor3f[6];
 		c[0] = new UniColor3f(1f, 0f, 0f);
 		c[1] = new UniColor3f(1f, 0f, 0f);
@@ -216,11 +225,11 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		c[3] = new UniColor3f(0f, 1f, 0f);
 		c[4] = new UniColor3f(0f, 0f, 1f);
 		c[5] = new UniColor3f(0f, 0f, 1f);
-		
+
 		UniStandardRenderer std = new UniStandardRenderer(v, null, c, null);
 		std.create();
 		originLines = new UniMesh(std);
-		
+
 		linesDL = new UniDisplayList(originLines, GL_LINES);
 		linesDL.create();
 	}
@@ -229,14 +238,20 @@ public class UniverseEngineShaderTest implements UniverseEngineEntryPoint, UniIn
 		UniPrint.enabled = true;
 		new UniverseEngineShaderTest("res/bunny.obj", GL_TRIANGLES, null);
 	}
-	
+
 	public static void start(String modelLoc, int mode, UniShaderTestUniform uniformer) {
 		UniPrint.enabled = true;
 		new UniverseEngineShaderTest(modelLoc, mode, uniformer);
 	}
 
+	@Override
 	public void displayUpdate() {
 		Display.update();
+	}
+
+	@Override
+	public boolean isCloseRequested() {
+		return Display.isCloseRequested();
 	}
 
 }

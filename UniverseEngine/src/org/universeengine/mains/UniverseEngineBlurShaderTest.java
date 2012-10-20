@@ -1,8 +1,56 @@
 package org.universeengine.mains;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL11.GL_BACK;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_FILL;
+import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
+import static org.lwjgl.opengl.GL11.GL_LIGHTING;
+import static org.lwjgl.opengl.GL11.GL_LIGHT_MODEL_LOCAL_VIEWER;
+import static org.lwjgl.opengl.GL11.GL_LINE;
+import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.GL_LINE_SMOOTH_HINT;
+import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_NICEST;
+import static org.lwjgl.opengl.GL11.GL_ONE;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
+import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
+import static org.lwjgl.opengl.GL11.GL_SMOOTH;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL11.glBegin;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glColor4f;
+import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glEnd;
+import static org.lwjgl.opengl.GL11.glHint;
+import static org.lwjgl.opengl.GL11.glLightModeli;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
+import static org.lwjgl.opengl.GL11.glShadeModel;
+import static org.lwjgl.opengl.GL11.glTexParameteri;
+import static org.lwjgl.opengl.GL11.glVertex2f;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL13.glMultiTexCoord2f;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +84,7 @@ import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
 public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, UniInputListener {
-	
+
 	public static final int FBO_WIDTH = 800;
 	public static final int FBO_HEIGHT = 600;
 
@@ -47,7 +95,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 	private UniInput input;
 	private UniCamera cam;
 	private UniModel model;
-	private UniDisplayList linesDL; 
+	private UniDisplayList linesDL;
 	private String modelpath;
 	private String texturepath;
 	private UniTexture tex;
@@ -71,28 +119,29 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 			lateStart();
 		}
 	}
-	
+
 	public void setMaterial(UniStdMaterial mat) {
 		this.mat = mat;
 		this.mat.bind();
 	}
-	
+
 	public void setLight(UniStdLight light) {
 		this.light = light;
 	}
-	
+
 	public void lateStart() {
 		loop.start();
 	}
 
+	@Override
 	public void start() {
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
-		
+
 		input = new UniInput(this);
 		cam = new UniCamera(loop);
-		
+
 		setUpViewport(loop.display.getSize().width, loop.display.getSize().height);
 		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -108,9 +157,9 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 			glShadeModel(GL_SMOOTH);
 			glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 		}
-		
+
 		setupOriginLines();
-		
+
 		try {
 			if (modelpath.endsWith(".uem"))
 				model = UniModelLoader.UEM.load(modelpath);
@@ -137,6 +186,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		uniformShift = new UniUniform("shift", blurShader);
 	}
 
+	@Override
 	public void tick() {
 		input.update();
 		cam.update();
@@ -145,6 +195,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		}
 	}
 
+	@Override
 	public void render() {
 		// FBO Render Pass:
 		renderFBO();
@@ -152,7 +203,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		// Real render pass:
 		renderFromFBO();
 	}
-	
+
 	public void renderFBO() {
 		// Bind FBO:
 		fbo.bind(false, 50f, 0.1f, 64f);
@@ -160,19 +211,19 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		glClearColor(0.3f, 0.5f, 0.8f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		
+
 		if (!wireFrame) {
 			glColor3f(1f, 1f, 1f);
 		} else {
 			glColor3f(1f, 0.5f, 0f);
 		}
 		cam.apply();
-		
+
 		if (light != null) {
 			glEnable(GL_LIGHTING);
 			light.bind();
 		}
-		
+
 		if (tex != null) tex.bind();
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -183,30 +234,30 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		if (light != null) {
 			glDisable(GL_LIGHTING);
 		}
-		
+
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
 		glEnable(GL_DEPTH_TEST);
 		// Unbind FBO:
 		fbo.unbind();
 	}
-	
+
 	public void renderFromFBO() {
 		float w = display.getWidth();
 		float h = display.getHeight();
-		
+
 		setUpViewport(display.getWidth(), display.getHeight());
-		
+
 		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		
+
 		glDisable(GL_DEPTH_TEST);
 		if (blurEnabled) {
 			glActiveTexture(GL_TEXTURE0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			
+
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE);
 			glColor4f(1f, 1f, 1f, 1f);
@@ -223,7 +274,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 				glMultiTexCoord2f(GL_TEXTURE0, 0f, 1f); glVertex2f(0f,  h);
 			}
 			glEnd();
-			
+
 			glColor4f(1f, 1f, 1f, 0.5f);
 			uniformTexture.uniform1i(0);
 			uniformShift.uniform2f(0f, 1.4f/h);
@@ -256,21 +307,26 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		glEnable(GL_DEPTH_TEST);
 	}
 
+	@Override
 	public void pause() {
 	}
 
+	@Override
 	public void resume() {
 	}
 
+	@Override
 	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight) {
 		setUpViewport(newWidth, newHeight);
 	}
 
+	@Override
 	public void end() {
 		model.destroy();
 		fbo.destroy();
 	}
-	
+
+	@Override
 	public void keyPressed(int key) {
 		if (key == Keyboard.KEY_F2) {
 			String screenname = "screenshots/screenshot";
@@ -278,17 +334,18 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 			String screenpath = null;
 			int i = 0;
 			File f = new File(screenname + i + imageformat);
-			
+
 			do {
 				f = new File(screenname + i + imageformat);
 				screenpath = screenname + i + imageformat;
 				i++;
 			} while(f.exists());
-			
+
 			loop.saveScreenshot(screenpath);
 		}
 	}
-	
+
+	@Override
 	public void keyReleased(int key) {
 		if (key == Keyboard.KEY_L) {
 			limitFPS = !limitFPS;
@@ -311,7 +368,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		glOrtho(0, width, 0, height, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 	}
-	
+
 	private void setupOriginLines() {
 		UniVertex3f[] v = new UniVertex3f[6];
 		v[0] = new UniVertex3f(0f, 0f, 0f);
@@ -320,7 +377,7 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		v[3] = new UniVertex3f(0f, 1f, 0f);
 		v[4] = new UniVertex3f(0f, 0f, 0f);
 		v[5] = new UniVertex3f(0f, 0f, 1f);
-		
+
 		UniColor3f[] c = new UniColor3f[6];
 		c[0] = new UniColor3f(1f, 0f, 0f);
 		c[1] = new UniColor3f(1f, 0f, 0f);
@@ -328,11 +385,11 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 		c[3] = new UniColor3f(0f, 1f, 0f);
 		c[4] = new UniColor3f(0f, 0f, 1f);
 		c[5] = new UniColor3f(0f, 0f, 1f);
-		
+
 		UniStandardRenderer std = new UniStandardRenderer(v, null, c, null);
 		std.create();
 		originLines = new UniMesh(std);
-		
+
 		linesDL = new UniDisplayList(originLines, GL_LINES);
 		linesDL.create();
 	}
@@ -340,31 +397,37 @@ public class UniverseEngineBlurShaderTest implements UniverseEngineEntryPoint, U
 	public static void main(String[] args) {
 		start("res/OrangeCharacterHighRes.obj", null, GL_QUADS);
 	}
-	
+
 	public static void start(String modelpath, String texturepath, int mode) {
 		UniPrint.enabled = true;
-		UniverseEngineBlurShaderTest viewer = 
+		UniverseEngineBlurShaderTest viewer =
 				new UniverseEngineBlurShaderTest(modelpath, texturepath, mode, false);
-		
+
 		UniStdLight light = new UniStdLight(0, 4f, 4f, 4f, 1f);
 		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);
 		light.setDiffuse(0.8f, 0.8f, 0.8f, 1f);
 		light.setSpecular(1f, 1f, 1f, 1f);
-		
+
 		UniStdMaterial mat = new UniStdMaterial();
 		mat.setAmbient(1f, 0.7f, 0f, 1f);
 		mat.setDiffuse(1f, 0.5f, 0f, 1f);
 		mat.setSpecular(1f, 1f, 1f, 1f);
 		mat.setShininess(60f);
-		
+
 		viewer.setLight(light);
 		viewer.setMaterial(mat);
-		
+
 		viewer.lateStart();
 	}
 
+	@Override
 	public void displayUpdate() {
 		Display.update();
+	}
+
+	@Override
+	public boolean isCloseRequested() {
+		return Display.isCloseRequested();
 	}
 
 }

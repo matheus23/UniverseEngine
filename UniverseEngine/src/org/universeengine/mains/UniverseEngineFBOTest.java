@@ -75,7 +75,7 @@ import org.universeengine.util.input.UniInputListener;
 import org.universeengine.util.render.UniDisplayList;
 
 public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInputListener {
-	
+
 	public static final int FBO_WIDTH = 1024;
 	public static final int FBO_HEIGHT = 1024;
 
@@ -86,7 +86,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 	private UniInput input;
 	private UniCamera cam;
 	private UniModel model;
-	private UniDisplayList linesDL; 
+	private UniDisplayList linesDL;
 	private String modelpath;
 	private String texturepath;
 	private UniTexture tex;
@@ -108,29 +108,30 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 			lateStart();
 		}
 	}
-	
+
 	public void setMaterial(UniStdMaterial mat) {
 		this.mat = mat;
 		this.mat.bind();
 	}
-	
+
 	public void setLight(UniStdLight light) {
 		this.light = light;
 	}
-	
+
 	public void lateStart() {
 		loop.start();
 	}
 
+	@Override
 	public void start() {
 		UniPrint.enabled = true;
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
 		Display.setVSyncEnabled(vsync);
-		
+
 		input = new UniInput(this);
 		cam = new UniCamera(loop);
-		
+
 		setUpViewport(loop.display.getSize().width, loop.display.getSize().height);
 		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -146,9 +147,9 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 			glShadeModel(GL_SMOOTH);
 			glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 		}
-		
+
 		setupOriginLines();
-		
+
 		try {
 			if (modelpath.contains(".uem"))
 				model = UniModelLoader.UEM.load(modelpath);
@@ -170,6 +171,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		}
 	}
 
+	@Override
 	public void tick() {
 		input.update();
 		cam.update();
@@ -178,6 +180,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		}
 	}
 
+	@Override
 	public void render() {
 		// FBO Render Pass:
 		renderFBO();
@@ -185,7 +188,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		// Real render pass:
 		renderCube();
 	}
-	
+
 	public void renderFBO() {
 		// Bind FBO:
 		fbo.bind(false, 50f, 0.1f, 64f);
@@ -201,12 +204,12 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		glTranslatef(0f, 0f, -12f);
 		glRotatef(angle, 0f, 1f, 0f);
 		angle += 1f;
-		
+
 		if (light != null) {
 			glEnable(GL_LIGHTING);
 			light.bind();
 		}
-		
+
 		if (tex != null) tex.bind();
 		model.render(mode);
 		if (tex != null) tex.unbind();
@@ -214,14 +217,14 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		if (light != null) {
 			glDisable(GL_LIGHTING);
 		}
-		
+
 		glDisable(GL_DEPTH_TEST);
 		linesDL.render();
 		glEnable(GL_DEPTH_TEST);
 		// Unbind FBO:
 		fbo.unbind();
 	}
-	
+
 	public void renderCube() {
 		glClearColor(0f, 0f, 0f, 0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -233,7 +236,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 			glColor4f(1f, 0.5f, 0f, 1f);
 		}
 		cam.apply();
-		
+
 		glDisable(GL_BLEND);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, fbo.getTextureID());
@@ -282,21 +285,26 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		glEnd();
 	}
 
+	@Override
 	public void pause() {
 	}
 
+	@Override
 	public void resume() {
 	}
 
+	@Override
 	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight) {
 		setUpViewport(newWidth, newHeight);
 	}
 
+	@Override
 	public void end() {
 		model.destroy();
 		fbo.destroy();
 	}
-	
+
+	@Override
 	public void keyPressed(int key) {
 		if (key == Keyboard.KEY_F2) {
 			String screenname = "screenshots/screenshot";
@@ -304,17 +312,18 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 			String screenpath = null;
 			int i = 0;
 			File f = new File(screenname + i + imageformat);
-			
+
 			do {
 				f = new File(screenname + i + imageformat);
 				screenpath = screenname + i + imageformat;
 				i++;
 			} while(f.exists());
-			
+
 			loop.saveScreenshot(screenpath);
 		}
 	}
-	
+
+	@Override
 	public void keyReleased(int key) {
 		if (key == Keyboard.KEY_L) {
 			limitFPS = !limitFPS;
@@ -337,7 +346,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		glViewport(0, 0, width, height);
 		glMatrixMode(GL_MODELVIEW);
 	}
-	
+
 	private void setupOriginLines() {
 		UniVertex3f[] v = new UniVertex3f[6];
 		v[0] = new UniVertex3f(0f, 0f, 0f);
@@ -346,7 +355,7 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		v[3] = new UniVertex3f(0f, 1f, 0f);
 		v[4] = new UniVertex3f(0f, 0f, 0f);
 		v[5] = new UniVertex3f(0f, 0f, 1f);
-		
+
 		UniColor3f[] c = new UniColor3f[6];
 		c[0] = new UniColor3f(1f, 0f, 0f);
 		c[1] = new UniColor3f(1f, 0f, 0f);
@@ -354,11 +363,11 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 		c[3] = new UniColor3f(0f, 1f, 0f);
 		c[4] = new UniColor3f(0f, 0f, 1f);
 		c[5] = new UniColor3f(0f, 0f, 1f);
-		
+
 		UniStandardRenderer std = new UniStandardRenderer(v, null, c, null);
 		std.create();
 		originLines = new UniMesh(std);
-		
+
 		linesDL = new UniDisplayList(originLines, GL_LINES);
 		linesDL.create();
 	}
@@ -366,31 +375,37 @@ public class UniverseEngineFBOTest implements UniverseEngineEntryPoint, UniInput
 	public static void main(String[] args) {
 		start("res/OrangeCharacterHighRes.obj", null, GL_QUADS);
 	}
-	
+
 	public static void start(String modelpath, String texturepath, int mode) {
 		UniPrint.enabled = true;
-		UniverseEngineFBOTest viewer = 
+		UniverseEngineFBOTest viewer =
 				new UniverseEngineFBOTest(modelpath, texturepath, mode, false);
-		
+
 		UniStdLight light = new UniStdLight(0, 4f, 4f, 4f, 1f);
 		light.setAmbient(0.2f, 0.2f, 0.2f, 1f);
 		light.setDiffuse(0.8f, 0.8f, 0.8f, 1f);
 		light.setSpecular(1f, 1f, 1f, 1f);
-		
+
 		UniStdMaterial mat = new UniStdMaterial();
 		mat.setAmbient(1f, 0.7f, 0f, 1f);
 		mat.setDiffuse(1f, 0.5f, 0f, 1f);
 		mat.setSpecular(1f, 1f, 1f, 1f);
 		mat.setShininess(60f);
-		
+
 		viewer.setLight(light);
 		viewer.setMaterial(mat);
-		
+
 		viewer.lateStart();
 	}
 
+	@Override
 	public void displayUpdate() {
 		Display.update();
+	}
+
+	@Override
+	public boolean isCloseRequested() {
+		return Display.isCloseRequested();
 	}
 
 }

@@ -40,7 +40,7 @@ public class UniLoop implements UniPrintable {
 	/**
 	 * After calling this, you will only get back on the end of the game, when
 	 * the user has pressed escape or has closed the window.
-	 * @param enterPoint the enterPoint to call updates of rendering. 
+	 * @param enterPoint the enterPoint to call updates of rendering.
 	 * This is not allowed to be null!
 	 * @param display the UniDisplay you should have created before.
 	 */
@@ -48,7 +48,7 @@ public class UniLoop implements UniPrintable {
 		this.enterPoint = enterPoint;
 		this.display = display;
 	}
-	
+
 	private void runLoop() {
 		delayHandler = new DelayHandler();
 		delayHandler.setFpsCalcDelay(60);
@@ -74,9 +74,9 @@ public class UniLoop implements UniPrintable {
 				if (display.isIconified()) pause();
 				onResize(oldw, oldh);
 				tick();
-				render();
 				enterPoint.displayUpdate();
-				running = !(display.isCloseRequested()
+				render();
+				running = !(enterPoint.isCloseRequested()
 						| delayHandler.update(delay));
 				if (forceExit) break;
 			}
@@ -89,7 +89,7 @@ public class UniLoop implements UniPrintable {
 
 	/**
 	 * Saves a Screenshot of OpenGL's Front-Buffer.
-	 * 
+	 *
 	 * @param filepath Filepath to save the Screenshot to.
 	 */
 	public void saveScreenshot(String filepath) {
@@ -99,12 +99,12 @@ public class UniLoop implements UniPrintable {
 			viewport.rewind();
 			glGetInteger(GL_VIEWPORT, viewport);
 			viewport.rewind();
-			UniPrint.printoutf(this, "Viewport size: (%d, %d) (%d, %d)\n", 
+			UniPrint.printoutf(this, "Viewport size: (%d, %d) (%d, %d)\n",
 					viewport.get(0), viewport.get(1), viewport.get(2), viewport.get(3));
 			int width = viewport.get(2);
 			int height = viewport.get(3);
 			int bpp = display.getBPP();
-			
+
 			if (display instanceof UniAWTDisplay) {
 				UniAWTDisplay awtdisplay = (UniAWTDisplay) display;
 				boolean maximized = awtdisplay.isMaximized();
@@ -112,8 +112,8 @@ public class UniLoop implements UniPrintable {
 					bpp = 4;
 				}
 			}
-			
-			UniPrint.printoutf(this, 
+
+			UniPrint.printoutf(this,
 				"Saving screenshot... Bytes per Pixel: %d\n", bpp);
 			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
 			int format = 0;
@@ -129,11 +129,11 @@ public class UniLoop implements UniPrintable {
 			sst.start();
 		}
 	}
-	
+
 	public void setFrameRecalculationFrames(long frames) {
 		delayHandler.setFpsCalcDelay(frames);
 	}
-	
+
 	/**
 	 * @return the last updated fps.
 	 */
@@ -148,7 +148,7 @@ public class UniLoop implements UniPrintable {
 	private void render() {
 		enterPoint.render();
 	}
-	
+
 	/**
 	 * Pauses the loop and then calls
 	 * UniverseEngineEnterPoint.pause()
@@ -157,7 +157,7 @@ public class UniLoop implements UniPrintable {
 		pausing = true;
 		enterPoint.pause();
 	}
-	
+
 	/**
 	 * Resumes the loop and then calls
 	 * UniverseEngineEnterPoint.resume();
@@ -166,7 +166,7 @@ public class UniLoop implements UniPrintable {
 		pausing = false;
 		enterPoint.resume();
 	}
-	
+
 	/**
 	 * Calls the private method runLoop();
 	 * Does NOT start a new Thread.
@@ -176,7 +176,7 @@ public class UniLoop implements UniPrintable {
 			runLoop();
 		}
 	}
-	
+
 	/**
 	 * Forces to Exit the Loop, and with that,
 	 * destroying the display and OpenGL Context.
@@ -184,24 +184,25 @@ public class UniLoop implements UniPrintable {
 	public void stop() {
 		forceExit = true;
 	}
-	
+
 	public void setDelay(boolean delay) {
 		this.delay = delay;
 	}
-	
+
 	public boolean getDelay() {
 		return delay;
 	}
-	
+
 	public void setFrameCap(long fps) {
 		delayHandler.setFpsTime(fps);
 		delayHandler.setFpsCalcDelay(fps);
 	}
-	
+
+	@Override
 	public String getClassName() {
 		return getClass().getSimpleName();
 	}
-	
+
 	private void onResize(int oldw, int oldh) {
 		if ((oldw != display.getSize().width)
 				|| (oldh != display.getSize().height)) {
@@ -257,7 +258,7 @@ public class UniLoop implements UniPrintable {
 
 		/**
 		 * Call this after every frame.
-		 * 
+		 *
 		 * @param fps
 		 *            - The wanted FPS to sync to.
 		 * @return whether you should exit the loop or not.
@@ -267,11 +268,11 @@ public class UniLoop implements UniPrintable {
 			if (dodelay) {
 				yieldTime = Math.min(fpsTime, variableYieldTime + fpsTime % (1000*1000));
 				overSleep = 0; // time the sync goes over by
-				
+
 				try {
 					while (true) {
 						loopTime = getNano() - timeOld;
-						
+
 						if (loopTime < fpsTime- yieldTime) {
 							Thread.sleep(1);
 						}
@@ -287,9 +288,9 @@ public class UniLoop implements UniPrintable {
 					UniPrint.printerrf(this, "Error while sleeping!\n");
 					return true;
 				}
-				
+
 				timeOld = getNano() - Math.min(overSleep, fpsTime);
-				
+
 				if (overSleep > variableYieldTime) {
 					variableYieldTime = Math.min(variableYieldTime + 200*1000, fpsTime);
 				}
@@ -299,22 +300,22 @@ public class UniLoop implements UniPrintable {
 			}
 			return false;
 		}
-		
+
 		public void setFpsTime(long fps) {
 			fpsTime = (1000000000L / fps);
 		}
-		
+
 		/**
 		 * Set how much frames to wait, until the next
 		 * frame rate is printed. Also affects fps
-		 * calculation, because fps are calculated, 
+		 * calculation, because fps are calculated,
 		 * when they are printed.
 		 * @param frames - the frames to wait.
 		 */
 		public void setFpsCalcDelay(long frames) {
 			up = frames;
 		}
-		
+
 		/**
 		 * Get System Nano Time
 		 * @return will return the current time in nano's
@@ -322,7 +323,8 @@ public class UniLoop implements UniPrintable {
 		private long getNano() {
 		    return (Sys.getTime() * 1000000000) / Sys.getTimerResolution();
 		}
-		
+
+		@Override
 		public String getClassName() {
 			return getClass().getSimpleName();
 		}
@@ -349,6 +351,7 @@ public class UniLoop implements UniPrintable {
 			this.loop = loop;
 		}
 
+		@Override
 		public void run() {
 			File file = new File(location);
 			BufferedImage image = new BufferedImage(width, height,
@@ -379,7 +382,8 @@ public class UniLoop implements UniPrintable {
 					location);
 			loop.saving = false;
 		}
-		
+
+		@Override
 		public String getClassName() {
 			return getClass().getSimpleName();
 		}

@@ -38,30 +38,31 @@ import org.universeengine.opengl.texture.UniTexture;
 import org.universeengine.opengl.texture.UniTextureLoader;
 
 public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
-	
+
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 600;
-	
+
 	private UniAWTDisplay display;
 	private boolean pressedF2 = false;
 	private UniLoop loop;
 	private UniTexture tex;
 	private SimpleShape triangle;
-	
+
 	public UniverseEngine2DTest() {
 		display = new UniAWTDisplay(WIDTH, HEIGHT, "OpenGLTest");
 		loop = new UniLoop(this, display);
 		loop.start();
 	}
 
+	@Override
 	public void start() {
 		display.centerOnDefaultDisplay();
 		display.setVisible(true);
 		Display.setVSyncEnabled(false);
-		
+
 		loop.setDelay(false);
 		loop.setFrameRecalculationFrames(1000);
-		
+
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -81,6 +82,7 @@ public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 		triangle = new SimpleShape(tex);
 	}
 
+	@Override
 	public void tick() {
 		if (Keyboard.isKeyDown(Keyboard.KEY_F2) && !pressedF2) {
 			loop.saveScreenshot("screenshot0.png");
@@ -94,14 +96,15 @@ public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 		}
 	}
 
+	@Override
 	public void render() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		
+
 		float mx = Mouse.getX();
 		float my = Mouse.getY();
 		glTranslatef(mx, my, 0f);
-		
+
 		glColor4f(0.2f, 1f, 0.2f, 1f);
 		glBegin(GL_QUADS);
 		{
@@ -111,7 +114,7 @@ public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 			glVertex2f(- 20.0f, + 20.0f);
 		}
 		glEnd();
-		
+
 		tex.bind();
 		glBegin(GL_QUADS);
 		{
@@ -126,7 +129,8 @@ public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 		glColor4f(1f, 0f, 0f, 1f);
 		triangle.render();
 	}
-	
+
+	@Override
 	public void onResize(int oldWidth, int oldHeight, int newWidth, int newHeight) {
 		if ((oldWidth != loop.display.getSize().width)
 				|| (oldHeight != loop.display.getSize().height)) {
@@ -140,24 +144,33 @@ public class UniverseEngine2DTest implements UniverseEngineEntryPoint {
 		oldWidth = loop.display.getSize().width;
 		oldWidth = loop.display.getSize().height;
 	}
-	
+
+	@Override
 	public void pause() {
 		System.out.printf("Pausing\n");
 	}
-	
+
+	@Override
 	public void resume() {
 		System.out.printf("Resuming\n");
 	}
 
+	@Override
 	public void end() {
 	}
-	
+
 	public static void main(String[] args) {
 		new UniverseEngine2DTest();
 	}
 
+	@Override
 	public void displayUpdate() {
 		Display.update();
 	}
-	
+
+	@Override
+	public boolean isCloseRequested() {
+		return Display.isCloseRequested();
+	}
+
 }
